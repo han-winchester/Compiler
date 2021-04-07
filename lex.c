@@ -88,10 +88,7 @@ int letterToken(char letter[], char *reservedWords[], int lflag){
 	int i, j=0,k=0;
 
 	for(i=0;i<=15;i++){ // iterate through the reserved words array to check if the string read in is a match
-
-		/* REMEMBER TO CHANGE THIS BACK TO 14 FOR HW4	*/
-		
-		if(i>10){ // if not in the reserved words array then it is an identifier
+		if(i>14){ // if not in the reserved words array then it is an identifier
 			token = identsym; // get it's respective token
 			if(lflag == 1){ printf("	%s	%d\n", letter, token); }
 			tokenString[p] = token; // add token to token list array
@@ -117,7 +114,6 @@ int letterToken(char letter[], char *reservedWords[], int lflag){
 					tokenString[p] = token;
 					p++;
 					break;
-				/* REMEMBER TO ALSO CHANGE BACK THE NUMBERS FOR THE FOLLOWING CASES FOR HW4
 				case 2:
 					token = procsym;
 					if(lflag == 1){ printf("	%s	%d\n", letter, token); }
@@ -129,68 +125,68 @@ int letterToken(char letter[], char *reservedWords[], int lflag){
 					if(lflag == 1){ printf("	%s	%d\n", letter, token); }
 					tokenString[p] = token;
 					p++;
-					break;*/
-				case 2:
+					break;
+				case 4:
 					token = ifsym;
 					if(lflag == 1){ printf("	%s	%d\n", letter, token); }
 					tokenString[p] = token;
 					p++;
 					break;
-				case 3:
+				case 5:
 					token = thensym;
 					if(lflag == 1){ printf("	%s	%d\n", letter, token); }
 					tokenString[p] = token;
 					p++;
 					break;
-				/*case 6:
-					token = elsesym;
-					if(lflag == 1){ printf("	%s	%d\n", letter, token); }
-					tokenString[p] = token;
-					p++;
-					break;*/
-				case 4:
-					token = whilesym;
-					if(lflag == 1){ printf("	%s	%d\n", letter, token); }
-					tokenString[p] = token;
-					p++;
-					break;
-				case 5:
-					token = dosym;
-					if(lflag == 1){ printf("	%s	%d\n", letter, token); }
-					tokenString[p] = token;
-					p++;
-					break;
 				case 6:
-					token = readsym;
+					token = elsesym;
 					if(lflag == 1){ printf("	%s	%d\n", letter, token); }
 					tokenString[p] = token;
 					p++;
 					break;
 				case 7:
-					token = writesym;
+					token = whilesym;
 					if(lflag == 1){ printf("	%s	%d\n", letter, token); }
 					tokenString[p] = token;
 					p++;
 					break;
 				case 8:
-					token = oddsym;
+					token = dosym;
 					if(lflag == 1){ printf("	%s	%d\n", letter, token); }
 					tokenString[p] = token;
 					p++;
 					break;
-				/*case 9:
-					token = returnsym;
-					if(lflag == 1){ printf("	%s	%d\n", letter, token); }
-					tokenString[p] = token;
-					p++;
-					break;*/
 				case 9:
-					token = beginsym;
+					token = readsym;
 					if(lflag == 1){ printf("	%s	%d\n", letter, token); }
 					tokenString[p] = token;
 					p++;
 					break;
 				case 10:
+					token = writesym;
+					if(lflag == 1){ printf("	%s	%d\n", letter, token); }
+					tokenString[p] = token;
+					p++;
+					break;
+				case 11:
+					token = oddsym;
+					if(lflag == 1){ printf("	%s	%d\n", letter, token); }
+					tokenString[p] = token;
+					p++;
+					break;
+				case 12:
+					token = returnsym;
+					if(lflag == 1){ printf("	%s	%d\n", letter, token); }
+					tokenString[p] = token;
+					p++;
+					break;
+				case 13:
+					token = beginsym;
+					if(lflag == 1){ printf("	%s	%d\n", letter, token); }
+					tokenString[p] = token;
+					p++;
+					break;
+				case 14:
 					token = endsym;
 					if(lflag == 1){ printf("	%s	%d\n", letter, token); }
 					tokenString[p] = token;
@@ -367,7 +363,7 @@ int specialSymbolToken(char symbol, char nextSymbol, int lflag){
 void lex(FILE * inputFile, int lflag, int aflag, int vflag){
 
 	memset(tokenString, '\0', sizeof(tokenString)); // fill token list array with '\0'
-	char *reservedWords[] = {"const", "var", /*"procedure", "call",*/ "if", "then", /*"else",*/ "while", "do", "read", "write", "odd", /*"return",*/ "begin", "end"}; // char array of pointers to char arrays
+	char *reservedWords[] = {"const", "var", "procedure", "call", "if", "then", "else", "while", "do", "read", "write", "odd", "return", "begin", "end"}; // char array of pointers to char arrays
 	char specialSymbols[] = {'+', '-', '*', '/', '(', ')', '=', ',', '.', '<', '>', ';', ':', '%'};
 
 	if(lflag == 1){
