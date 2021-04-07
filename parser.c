@@ -15,9 +15,12 @@ typedef struct symbol{
 	int val; 		// number 
 	int level; 		// L level
 	int addr; 		// M address
+	int mark;		// to indicate that code has been generated already for a block
+	int param; 		// to indicate if the parameter for a procedure has been declared
 } symbol; 
 
 // Global
+int procedureCount = 0;
 int tokensId = 0; 
 int symbol_table_id = 0;
 int lineNum = 0; // also opcode, NOT LEXICAL GRAPHICAL LEVEL
@@ -141,7 +144,7 @@ int constDeclaration(char token, char tokens[]){
 
 			// check for identsym
 			if(token != 2){
-				printf("Error: const, var, and read keywords must be followed by identifier\n");
+				printf("Error: const, var, procedure, call and read keywords must be followed by identifier\n");
 				exit(0);
 			}
 			if(symbolTableCheck(token, tokens) != -1){
@@ -211,7 +214,7 @@ int varDeclaration(char token, char tokens[], int numVars){
 		
 			// check for identifier
 			if(token != 2){
-				printf("Error: const, var, and read keywords must be followed by identifier\n");
+				printf("Error: const, var, procedure, call and read keywords must be followed by identifier\n");
 				exit(0);
 			}
 			// check if already in symbol table
@@ -614,7 +617,7 @@ int statement(char token, char tokens[]){
 
 		//identsym
 		if(token != 2){
-			printf("Error: const, var, and read keywords must be followed by identifier\n");
+			printf("Error: const, var, procedure, call and read keywords must be followed by identifier\n");
 			exit(0);
 		}
 		symId = symbolTableCheck(token, tokens);
