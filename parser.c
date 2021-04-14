@@ -163,6 +163,17 @@ int symbolTableSearch(char token, char tokens[], int lexLevel, int kind){
 	return -1;
 }
 
+// linear search through symbol table looking at procedure values return index if found, -1 if not
+int findProcedure(){
+
+}
+
+// starting from the end of the symbol table and looping backward if entry is unmarked, mark it
+int mark(int count){
+
+
+}
+
 int constDeclaration(char token, char tokens[]){
 	//constsym
 	if(token == 28){
@@ -711,6 +722,41 @@ int block(char token, char tokens[]){
 }
 
 int program(char token, char tokens[]){
+	int numProc = 1;
+
+	emit(lineNum, "JMP", 0, 0);
+
+	int i;
+	for(i=0;i<=sizeof(tokens);i++){
+		//procsym
+		if(token == 30){
+			numProc++;
+			emit(lineNum, "JMP", 0, 0);
+		}
+	}
+
+	// add to symbol table
+	symbol_table[symbol_table_id].kind = 3;
+	strcpy(symbol_table[symbol_table_id].name, "main");
+	symbol_table[symbol_table_id].val = 0;
+	symbol_table[symbol_table_id].level = 0;
+	symbol_table[symbol_table_id].addr = 0;
+	symbol_table[symbol_table_id].mark = 0;
+	symbol_table[symbol_table_id].param = 0;
+	symbol_table_id++;
+
+	procedureCount++;
+
+	token = block(0, 1, 0, 0);
+	//periodsym
+	if(token != 19){
+		printf("Error: Must end with period\n");
+	}
+	int j;
+	for(j=0;j< numProc;j++){
+		code[j].m = findProcedure(j).addr;
+	}
+
 	token = block(token, tokens);
 
 	token = getNextToken(tokens);
