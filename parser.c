@@ -105,7 +105,7 @@ int getNextToken(char tokens[]){
 
 // linear search through symbol table looking at name
 // return index if found -1 if not
-int symbolTableCheck(char token, char tokens[]){
+int symbolTableCheck(char token, char tokens[], int lexLevel){
 	char identifier[500] = {};
 	int i = 0; int g = 0;
 
@@ -126,11 +126,41 @@ int symbolTableCheck(char token, char tokens[]){
 
 	// iterate through table array and check if name matches any entries
 	for(i=0;i<=MAX_SYMBOL_TABLE_SIZE;i++){
-		if(!(strcmp(identifier, symbol_table[i].name))){ // strcmp returns 0 if the strings match
+		if(!(strcmp(identifier, symbol_table[i].name)) && (symbol_table[i].level == lexLevel) && (symbol_table[i].mark == 0)){ // strcmp returns 0 if the strings match
 			return i;
 		}
 	}
 	return -1; // not found in symbol table
+}
+
+/* linear search through symbol table looking at name and kind
+returns index for exact match of string and kind unmarked, -1 if not */
+int symbolTableSearch(char token, char tokens[], int lexLevel, int kind){
+	char identifier[500] = {};
+	int i = 0; int g = 0;
+
+	do{
+		token = getNextToken(tokens);
+
+		// pass name into identifier to compare strings in symbol table
+		identifier[g] = token;
+		g++;
+	}while(tokens[tokensId] > 47);
+
+	int y = 0;
+	// iterate through identifier array to decrement o to not skip over tokens in tokens[tokensId] when returning from this function
+	while(identifier[y] != '\0'){
+		y++;
+		tokensId--;
+	}
+	// iterate through table array and check if name matches any entries
+	for(i=0;i<=MAX_SYMBOL_TABLE_SIZE;i++){
+		if(!(strcmp(identifier, symbol_table[i].name)) && (symbol_table[i].level == lexLevel) && (symbol_table[i].mark == 0) && (symbol_table[i].kind == kind)){ // strcmp returns 0 if the strings match
+			return i;
+		}
+	}
+
+	return -1;
 }
 
 int constDeclaration(char token, char tokens[]){
