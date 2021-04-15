@@ -185,10 +185,12 @@ int mark(int count){
 
 }
 
-int constDeclaration(char token, char tokens[]){
+int constDeclaration(char token, char tokens[], int lexLevel){
+	int numConst = 0;
 	//constsym
 	if(token == 28){
 		do{
+			numConst++;
 			char identName[500] = {};
 			//int identNameId = 0;
 
@@ -199,7 +201,7 @@ int constDeclaration(char token, char tokens[]){
 				printf("Error: const, var, procedure, call and read keywords must be followed by identifier\n");
 				exit(0);
 			}
-			if(symbolTableCheck(token, tokens) != -1){
+			if(symbolTableCheck(token, tokens, lexLevel) != -1){
 				printf("Error: symbol name has already been declared\n");
 				exit(0);
 			}
@@ -235,8 +237,10 @@ int constDeclaration(char token, char tokens[]){
 			symbol_table[symbol_table_id].kind = 1;
 			strcpy(symbol_table[symbol_table_id].name, identName);
 			symbol_table[symbol_table_id].val = numberDigit; 
-			symbol_table[symbol_table_id].level = 0;
+			symbol_table[symbol_table_id].level = lexLevel;
 			symbol_table[symbol_table_id].addr = 0;
+			symbol_table[symbol_table_id].mark = 0;
+			symbol_table[symbol_table_id].param = 0;
 			symbol_table_id++;
 
 		// commasym
@@ -245,7 +249,7 @@ int constDeclaration(char token, char tokens[]){
 	}
 	// check if line ends with semicolon
 	if(token == 18){
-		return 1;
+		return numConst;
 	}
 	else{ // if next token is not a comma or semicolon this is an error
 		printf("Error: constant and variable declarations must be followed by a semicolon\n");
@@ -709,26 +713,38 @@ int statement(char token, char tokens[]){
 	return token;
 }
 
-int block(char token, char tokens[]){
-	int numVars = 0;
+int block(char token, char tokens[], int lexLevel, int param, int procedureId){
+	int numVars = 0; int c = 0; int p = 0;
 
 	// constsym
 	if(token == 28){
-		constDeclaration(token, tokens);
+		c = constDeclaration(token, tokens, lexLevel);
 		token = getNextToken(tokens);
 	}
 
 	//varsym
 	if(token == 29){
-		numVars = varDeclaration(token, tokens, numVars);
+		numVars = varDeclaration(token, tokens, numVars, lexLevel, param);
 		emit(lineNum, "INC", 0, numVars+4);
 		lineNum++;
 	}
+
+	// procsym
+	if(token == 30){
+		p = procDeclaration(lexLevel);
+	}
+
+	symbol_table[procedureId].addr = //current code index
+
+	emit(lineNum, "INC", lexLevel, numVars+4);
+	lineNum++;
 	
 	token = getNextToken(tokens);
 
-	token = statement(token, tokens); 
+	token = statement(token, tokens, lexLevel); 
 
+	mark(c+numVars+p);
+	
 	return token;
 }
 
@@ -765,7 +781,7 @@ int program(char token, char tokens[]){
 	}
 	int j;
 	for(j=0;j< numProc;j++){
-		code[j].m = findProcedure(j).addr;
+		code[j].m = symbol_table[findProcedure(j).addr;
 	}
 
 	token = block(token, tokens);
