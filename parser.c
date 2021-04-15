@@ -476,8 +476,8 @@ int factor(char token, char tokens[]){
 }
 
 // get term
-int term(char token, char tokens[]){
-	token = factor(token, tokens);
+int term(char token, char tokens[], int lexLevel){
+	token = factor(token, tokens, lexLevel);
 
 	// while token is multsym, slashsym, or modsym
 	while(token == 6 || token == 7 || token == 1){
@@ -485,7 +485,7 @@ int term(char token, char tokens[]){
 		if(token == 6){
 			token = getNextToken(tokens);
 
-			token = factor(token, tokens);
+			token = factor(token, tokens, lexLevel);
 
 			// MUL
 			emit(lineNum, "OPR", 0, 4);
@@ -495,7 +495,7 @@ int term(char token, char tokens[]){
 		else if(token == 7){
 			token = getNextToken(tokens);
 
-			token = factor(token, tokens);
+			token = factor(token, tokens, lexLevel);
 
 			//DIV
 			emit(lineNum, "OPR", 0, 5);
@@ -504,7 +504,7 @@ int term(char token, char tokens[]){
 		else{ // else its a modsym
 			token = getNextToken(tokens);
 
-			token = factor(token, tokens);
+			token = factor(token, tokens, lexLevel);
 
 			//MOD
 			emit(lineNum, "OPR", 0, 7);
