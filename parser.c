@@ -672,12 +672,12 @@ int condition(char token, char tokens[], int lexLevel){
 }
 
 // get statement
-int statement(char token, char tokens[]){
+int statement(char token, char tokens[], int lexLevel){
 	int symId = 0;
 	
 	// identsym
 	if(token == 2){
-		symId = symbolTableCheck(token, tokens);
+		symId = symbolTableSearch(token, tokens, lexLevel, 2); // CHECK THIS PARAMETER ARGUMENTS
 		if(symId == -1){
 			printf("Error: undeclared symbol\n");
 			exit(0);
@@ -701,21 +701,85 @@ int statement(char token, char tokens[]){
 
 		token = getNextToken(tokens);
 
-		token = expression(token, tokens);
+		token = expression(token, tokens, lexLevel);
 
-		emit(lineNum, "STO", 0, symbol_table[symId].addr);
+		emit(lineNum, "STO", lexLevel - symbol_table[symId].level, symbol_table[symId].addr);
 
 		while(token > 47){token = getNextToken(tokens);}
 
 		lineNum++;
 		return token;
 	}
+	// callsym
+	if(token == 27){
+		token = getNextToken(tokens);
+		// identsym
+		if(token != 2){
+			printf("Error:\n"); // CHECK THIS ERROR MESSAGE
+			exit(0);
+		}
+		symId = symbolTableSearch(token, tokens, lexLevel, 3); // CHECK PARAMETER ARGUMENTS
+		if(symId == -1){
+			printf("Error:\n");// CHECK THIS ERROR MESSAGE
+			exit(0);
+		}
+		token = getNextToken(tokens);
+
+		// lparentsym
+		if(token == 15){
+			token = getNextToken(tokens);
+			if(symbol_table[symId].param != 1){
+				printf("Error:\n"); // CHECK THIS ERROR MESSAGE
+				exit(0);
+			}
+			token = expression(token, tokens, lexLevel);
+			//rparentsym
+			if(token != 16){
+				printf("Error:\n"); // CHECK THIS ERROR MESSAGE
+				exit(0);
+			}
+			token = getNextToken(tokens);
+		}
+		else{
+			emit(/*LIT 0 */);
+		}
+		emit(/*CAL L=lexLevel - symboltable[symId].level, M= symboltable[symId].value*/);
+
+		return token;
+	}
+
+	//returnsym
+	if(token == 34){
+		if(lexLevel == 0){
+			printf("Error:\n"); // CHECK THIS ERROR MESSAGE
+			exit(0);
+		}
+		token = getNextToken(tokens);
+
+		// lparentsym
+		if(token == 15){
+			token = getNextToken(tokens);
+			token = expression(token, tokens, lexLevel);
+			emit(/*RTN*/);
+			// rparentsym
+			if(token != 16){
+				printf("Error:\n"); // CHECK THIS ERROR MESSAGE
+			}
+			token = getNextToken(tokens);
+		}
+		else{
+			emit(/*LIT 0*/);
+			emit(/*RTN*/);
+		}
+		return token;
+	}
+
 	// beginsym
 	if(token == 21){
 		do{
 			token = getNextToken(tokens);
 
-			token = statement(token, tokens);
+			token = statement(token, tokens, lexLevel);
 		}while(token == 18); //semicolon
 		
 		// endsym
@@ -731,10 +795,10 @@ int statement(char token, char tokens[]){
 	if(token == 23){
 		token = getNextToken(tokens);
 
-		token = condition(token, tokens);
+		token = condition(token, tokens, lexLevel);
 
 		int jpcId = lineNum;
-		emit(lineNum, "JPC", 0, jpcId);
+		emit(lineNum, "JPC", lexLevel, jpcId);
 		lineNum++;
 
 		//thensym
@@ -744,9 +808,20 @@ int statement(char token, char tokens[]){
 		}
 		token = getNextToken(tokens);
 
-		token = statement(token, tokens);
+		token = statement(token, tokens, lexLevel);
 
-		code[jpcId].m = lineNum;
+		// elsesym
+		if(token == 33){
+			token = getNextToken(tokens);
+			jpcId = lineNum;
+			emit(lineNum, "JMP", lexLevel, 0);
+			code[jpcId].m = lineNum;
+			token = statement(token, tokens, lexLevel);
+			code[jpcId].m = lineNum;
+		}
+		else{
+			code[jpcId].m = lineNum;
+		}
 
 		return token;
 	}
@@ -756,7 +831,7 @@ int statement(char token, char tokens[]){
 
 		int loopId = lineNum;
 
-		token = condition(token, tokens);
+		token = condition(token, tokens, lexLevel);
 
 		//dosym
 		if(token != 26){
@@ -767,12 +842,12 @@ int statement(char token, char tokens[]){
 		token = getNextToken(tokens);
 		
 		int jpcId = lineNum;
-		emit(lineNum, "JPC", 0, jpcId);
+		emit(lineNum, "JPC", lexLevel, jpcId);
 		lineNum++;
 		
-		token = statement(token, tokens);
+		token = statement(token, tokens, lexLevel);
 
-		emit(lineNum, "JMP", 0, loopId);
+		emit(lineNum, "JMP", lexLevel, loopId);
 		lineNum++;
 
 		code[jpcId].m = lineNum;
@@ -790,7 +865,7 @@ int statement(char token, char tokens[]){
 			printf("Error: const, var, procedure, call and read keywords must be followed by identifier\n");
 			exit(0);
 		}
-		symId = symbolTableCheck(token, tokens);
+		symId = symbolTableSearch(token, tokens, lexLevel, 2);
 		if(symId == -1){
 			printf("Error: symbol name has already been declared\n");
 			exit(0);
@@ -806,9 +881,9 @@ int statement(char token, char tokens[]){
 
 		token = getNextToken(tokens);
 
-		emit(lineNum, "SYS", 0, 2);
+		emit(lineNum, "SYS", lexLevel, 2);
 		lineNum++;
-		emit(lineNum, "STO", 0, symbol_table[symId].addr);
+		emit(lineNum, "STO", lexLevel - symbol_table[symId].level, symbol_table[symId].addr);
 		lineNum++;
 		
 		return token;
@@ -817,9 +892,9 @@ int statement(char token, char tokens[]){
 	if(token == 31){
 		token = getNextToken(tokens);
 
-		token = expression(token, tokens);
+		token = expression(token, tokens, lexLevel);
 
-		emit(lineNum, "SYS", 0, 1);
+		emit(lineNum, "SYS", lexLevel, 1);
 		lineNum++;
 
 		return token;
