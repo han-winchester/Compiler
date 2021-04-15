@@ -258,7 +258,14 @@ int constDeclaration(char token, char tokens[], int lexLevel){
 }
 
 // returns the number of variables declared
-int varDeclaration(char token, char tokens[], int numVars){
+int varDeclaration(char token, char tokens[], int numVars, int lexLevel, int param){
+	if(param == 1){
+		numVars = 1;
+	}
+	else{
+		numVars = 0;
+	}
+	
 	// varsym
 	if(token == 29){
 		do{
@@ -274,7 +281,7 @@ int varDeclaration(char token, char tokens[], int numVars){
 				exit(0);
 			}
 			// check if already in symbol table
-			if(symbolTableCheck(token, tokens) != -1){
+			if(symbolTableCheck(token, tokens, lexLevel) != -1){
 				printf("Error: symbol name has already beeen declared\n");
 				exit(0);
 			}
@@ -286,8 +293,10 @@ int varDeclaration(char token, char tokens[], int numVars){
 			symbol_table[symbol_table_id].kind = 2;
 			strcpy(symbol_table[symbol_table_id].name, identName);
 			symbol_table[symbol_table_id].val = 0;
-			symbol_table[symbol_table_id].level = 0;
+			symbol_table[symbol_table_id].level = lexLevel;
 			symbol_table[symbol_table_id].addr = numVars + 3;
+			symbol_table[symbol_table_id].mark = 0;
+			symbol_table[symbol_table_id].param = 0;
 			symbol_table_id++;
 
 			token = getNextToken(tokens);
@@ -302,6 +311,106 @@ int varDeclaration(char token, char tokens[], int numVars){
 		printf("Error: constant and variable declarations must be followed by a semicolon\n");
 		exit(0);
 	}
+}
+
+int procDeclaration(char token, char tokens, int lexLevel){
+	int numProc = 0;
+
+	// procsym
+	if(token == 30){
+		do{
+			numProc++;
+			token = getNextToken(tokens);
+			//identsym
+			if(token != 2){
+				printf("Error: Next token must be identifier\n"); // CHECK THIS ERROR MESSAGE
+				exit(0);
+			}
+			if(symbolTableCheck(token, lexLevel) != -1){
+				printf("Error: This wasn't foun\n"); // CHECK THIS ERROR MESSAGE
+				exit(0);
+			}
+			procId = // end of symbol table
+
+			// Add to symbol table
+			symbol_table[symbol_table_id].kind = 3;
+			strcpy(symbol_table[symbol_table_id].name, identName);
+			symbol_table[symbol_table_id].val = procedureCount;
+			symbol_table[symbol_table_id].level = lexLevel;
+			symbol_table[symbol_table_id].addr = 0;
+			symbol_table[symbol_table_id].mark = param;
+			symbol_table[symbol_table_id].param = 0;
+			symbol_table_id++;
+
+			procedureCount++;
+
+			token = getNextToken(tokens);
+			//lparentsym
+			if(token == 15){
+				token = getNextToken(tokens);
+				//identsym
+				if(token != 2){
+					printf("Error: \n"); // CHECK THIS ERROR MESSAGE
+					exit(0);
+				}
+				// Add to symbol table
+				symbol_table[symbol_table_id].kind = 2;
+				strcpy(symbol_table[symbol_table_id].name, identName);
+				symbol_table[symbol_table_id].val = 0;
+				symbol_table[symbol_table_id].level = lexLevel + 1;
+				symbol_table[symbol_table_id].addr = 3;
+				symbol_table[symbol_table_id].mark = 0;
+				symbol_table[symbol_table_id].param = 0;
+				symbol_table[procId].param = 1;
+				symbol_table_id++;
+
+				token = getNextToken(tokens);
+
+				//rparentsym
+				if(token != 16){
+					printf("Error: \n"); // CHECK THIS ERROR MESSAGE
+					exit(0);
+				}
+
+				token = getNextToken(tokens);
+
+				//semicolonsym
+				if(token != 18){
+					printf("Error: \n"); // CHECK THIS ERROR MESSAGE
+					exit(0);
+				}
+
+				token = getNextToken(tokens);
+
+				block(lexLevel + 1, 1, procId);
+			}
+			else{
+				//semicolonsym
+				if(token != 18){
+					printf("Error: \n"); //CHECK THIS ERROR MESSAGE
+					exit(0);
+				}
+
+				token = getNextToken(tokens);
+
+				block(lexLevel+1, 0, procId);
+			}
+
+			if(code[codeId-1].op != 2 && code[codeId-1].m != 0){
+				emit(/*LIT M = 0*/);
+				emit(/*RTN*/);
+			}
+
+			// semicolonsym
+			if(token != 18){
+				printf("Error: \n"); // CHECK THIS ERROR MESSAGE
+				exit(0);
+			}
+
+			token = getNextToken(tokens);
+		}while(token == 30);
+	}
+	return numProc;
 }
 
 // get factor
@@ -731,7 +840,7 @@ int block(char token, char tokens[], int lexLevel, int param, int procedureId){
 
 	// procsym
 	if(token == 30){
-		p = procDeclaration(lexLevel);
+		p = procDeclaration(token, tokens, lexLevel);
 	}
 
 	symbol_table[procedureId].addr = //current code index
