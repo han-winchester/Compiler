@@ -414,25 +414,26 @@ int procDeclaration(char token, char tokens, int lexLevel){
 }
 
 // get factor
-int factor(char token, char tokens[]){
-	int symId=0;
+int factor(char token, char tokens[], int lexLevel){
+	int symIdV=0; int symIdC = 0;
 
 	//identsym
 	if(token == 2){
-		symId = symbolTableCheck(token, tokens);
-		
-		if(symId == -1){
+		symIdV = symbolTableSearch(token, tokens, lexLevel, 2);
+		symIdC = symbolTableSearch(token, tokens, lexLevel, 1);
+		if(symIdV == -1 && symIdC == -1){
 			printf("Error: undeclared symbol \n");
 			exit(0);
 		}
-		if (symbol_table[symId].kind == 1){ // const
-			emit(lineNum, "LIT", 0, symbol_table[symId].val);
+		else if(symIdC == -1 || symIdV != -1 && symbol_table[symIdV].level > symbol_table[symIdC].level){
+			emit(lineNum, "LOD", lexLevel - symbol_table[symIdV].level, symbol_table[symIdV].addr);
 			lineNum++;
 		}
-		else{ //var
-			emit(lineNum, "LOD", 0, symbol_table[symId].addr);
+		else{
+			emit(lineNum, "LIT", 0, symbol_table[symIdC].val);
 			lineNum++;
 		}
+
 		// skips over identifier
 		while(tokens[tokensId] > 47){ tokensId++; }
 		
@@ -457,7 +458,7 @@ int factor(char token, char tokens[]){
 	else if(token == 15){
 		token = getNextToken(tokens);
 
-		token = expression(token, tokens);
+		token = expression(token, tokens, lexLevel);
 
 		//right parenthesis
 		if(token != 16){
@@ -466,6 +467,10 @@ int factor(char token, char tokens[]){
 		}
 
 		token = getNextToken(tokens);
+	}
+	// if callsym
+	else if(token == 27){
+		token = statement(token, tokens, lexLevel);
 	}
 	else{
 		printf("Error: arithmetic equations must contain operands, parenthesis, numbers or symbols\n");
