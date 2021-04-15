@@ -165,12 +165,23 @@ int symbolTableSearch(char token, char tokens[], int lexLevel, int kind){
 
 // linear search through symbol table looking at procedure values return index if found, -1 if not
 int findProcedure(){
-
+	int i;
+	for(i=0;i<=MAX_SYMBOL_TABLE_SIZE;i++){
+		if(symbol_table[i].kind == 3){
+			return i;
+		}
+	}
+	return -1;
 }
 
 // starting from the end of the symbol table and looping backward if entry is unmarked, mark it
 int mark(int count){
-
+	int i;
+	for(i=MAX_SYMBOL_TABLE_SIZE;i>=0;i--){
+		if(symbol_table[i].mark == 0){
+			symbol_table[i].mark = 1;
+		}
+	}
 
 }
 
