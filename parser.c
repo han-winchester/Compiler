@@ -584,25 +584,25 @@ int expression(char token, char tokens[]){
 }
 
 // get condition
-int condition(char token, char tokens[]){
+int condition(char token, char tokens[], int lexLevel){
 	// oddsym
 	if(token == 8){
 		token = getNextToken(tokens);
 
-		token = expression(token, tokens);
+		token = expression(token, tokens, lexLevel);
 
 		//ODD
 		emit(lineNum, "OPR", 0, 6);
 		lineNum++;
 	}
 	else{
-		token = expression(token, tokens);
+		token = expression(token, tokens, lexLevel);
 
 		// eqlsym
 		if(token == 9){
 			token = getNextToken(tokens);
 
-			token = expression(token, tokens);
+			token = expression(token, tokens, lexLevel);
 
 			//EQL
 			emit(lineNum, "OPR", 0, 8);
@@ -612,7 +612,7 @@ int condition(char token, char tokens[]){
 		else if(token == 10){
 			token = getNextToken(tokens);
 
-			token = expression(token, tokens);
+			token = expression(token, tokens, lexLevel);
 
 			//NEQ
 			emit(lineNum, "OPR", 0, 9);
@@ -622,7 +622,7 @@ int condition(char token, char tokens[]){
 		else if(token == 11){
 			token = getNextToken(tokens);
 
-			token = expression(token, tokens);
+			token = expression(token, tokens, lexLevel);
 
 			// NEQ
 			emit(lineNum, "OPR", 0, 10);
@@ -632,7 +632,7 @@ int condition(char token, char tokens[]){
 		else if(token == 12){
 			token = getNextToken(tokens);
 
-			token = expression(token, tokens);
+			token = expression(token, tokens, lexLevel);
 
 			//NEQ
 			emit(lineNum, "OPR", 0, 11);
@@ -642,7 +642,7 @@ int condition(char token, char tokens[]){
 		else if(token == 13){
 			token = getNextToken(tokens);
 
-			token = expression(token, tokens);
+			token = expression(token, tokens, lexLevel);
 
 			//GTR
 			emit(lineNum, "OPR", 0, 12);
@@ -652,7 +652,7 @@ int condition(char token, char tokens[]){
 		else if(token == 14){
 			token = getNextToken(tokens);
 
-			token = expression(token, tokens);
+			token = expression(token, tokens, lexLevel);
 
 			//GEQ
 			emit(lineNum, "OPR", 0, 13);
