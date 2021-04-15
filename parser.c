@@ -29,7 +29,7 @@ symbol symbol_table[MAX_SYMBOL_TABLE_SIZE] = {}; // initialize symbol table
 instructions code[500] = {};
 
 // function header declaration
-int expression(char token, char tokens[]);
+int expression(char token, char tokens[], int lexLevel);
 
 int outputAssembly(){
 	int i = 0;
@@ -515,12 +515,12 @@ int term(char token, char tokens[]){
 }
 
 // get expression
-int expression(char token, char tokens[]){
+int expression(char token, char tokens[], int lexLevel){
 	// if minussym
 	if(token == 5){
 		token = getNextToken(tokens);
 
-		token = term(token, tokens);
+		token = term(token, tokens, lexLevel);
 
 		//SUB
 		emit(lineNum, "OPR", 0, 3);
@@ -532,7 +532,7 @@ int expression(char token, char tokens[]){
 				// skips over identifier
 				while(token > 47){token = getNextToken(tokens);}
 
-				token = term(token, tokens);
+				token = term(token, tokens, lexLevel);
 
 				//ADD
 				emit(lineNum, "OPR", 0, 2);
@@ -542,7 +542,7 @@ int expression(char token, char tokens[]){
 				//skips over identifier
 				while(token > 47){token = getNextToken(tokens);}
 
-				token = term(token, tokens);
+				token = term(token, tokens, lexLevel);
 
 				//SUB
 				emit(lineNum, "OPR", 0, 3);
@@ -558,12 +558,12 @@ int expression(char token, char tokens[]){
 			token = getNextToken(tokens);
 			return token;
 		}
-		token = term(token, tokens);
+		token = term(token, tokens, lexLevel);
 		while(token == 4 || token == 5){
 			if(token == 4){
 				token = getNextToken(tokens);
 
-				token = term(token, tokens);
+				token = term(token, tokens, lexLevel);
 
 				//ADD
 				emit(lineNum, "OPR", 0, 2);
@@ -572,7 +572,7 @@ int expression(char token, char tokens[]){
 			else{
 				token = getNextToken(tokens);
 
-				token = term(token, tokens);
+				token = term(token, tokens, lexLevel);
 
 				//SUB
 				emit(lineNum, "OPR", 0, 3);
