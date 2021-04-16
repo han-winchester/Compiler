@@ -382,7 +382,7 @@ int procDeclaration(char token, char tokens, int lexLevel){
 
 				token = getNextToken(tokens);
 
-				block(lexLevel + 1, 1, procId);
+				block(token, tokens, lexLevel + 1, 1, procId);
 			}
 			else{
 				//semicolonsym
@@ -393,7 +393,7 @@ int procDeclaration(char token, char tokens, int lexLevel){
 
 				token = getNextToken(tokens);
 
-				block(lexLevel+1, 0, procId);
+				block(token, tokens, lexLevel+1, 0, procId);
 			}
 
 			if(code[codeId-1].op != 2 && code[codeId-1].m != 0){
@@ -746,7 +746,7 @@ int statement(char token, char tokens[], int lexLevel){
 			emit(lineNum, "LIT", 0, 0);
 			lineNum++;
 		}
-		emit(/*CAL L=lexLevel - symboltable[symId].level, M= symboltable[symId].value*/);
+		emit(lineNum, "CAL", lexLevel - symbol_table[symId].level, symbol_table[symId].val);
 		lineNum++;
 
 		return token;
@@ -973,7 +973,7 @@ int program(char token, char tokens[]){
 
 	procedureCount++;
 
-	token = block(0, 1, 0, 0);
+	token = block(token, tokens, 0, 1, 0);
 	//periodsym
 	if(token != 19){
 		printf("Error: Must end with period\n");
@@ -983,7 +983,7 @@ int program(char token, char tokens[]){
 		code[j].m = symbol_table[findProcedure(j).addr];
 	}
 
-	token = block(token, tokens);
+	token = block(token, tokens, 0, 0, 0);
 
 	token = getNextToken(tokens);
 
