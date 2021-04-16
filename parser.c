@@ -397,9 +397,9 @@ int procDeclaration(char token, char tokens, int lexLevel){
 			}
 
 			if(code[codeId-1].op != 2 && code[codeId-1].m != 0){
-				emit(/*LIT M = 0*/);
+				emit(lineNum, "LIT", 0, 0);
 				lineNum++;
-				emit(/*RTN*/);
+				emit(lineNum, "OPR", lexLevel, 0);
 				lineNum++;
 			}
 
@@ -764,7 +764,7 @@ int statement(char token, char tokens[], int lexLevel){
 		if(token == 15){
 			token = getNextToken(tokens);
 			token = expression(token, tokens, lexLevel);
-			emit(/*RTN*/);
+			emit(lineNum, "OPR", lexLevel, 0);
 			lineNum++;
 			// rparentsym
 			if(token != 16){
@@ -775,7 +775,7 @@ int statement(char token, char tokens[], int lexLevel){
 		else{
 			emit(lineNum, "LIT", 0, 0);
 			lineNum++;
-			emit(/*RTN*/);
+			emit(lineNum, "OPR", lexLevel, 0);
 			lineNum++;
 		}
 		return token;
