@@ -977,6 +977,7 @@ int program(char token, char tokens[]){
 	//periodsym
 	if(token != 19){
 		printf("Error: Must end with period\n");
+		exit(0);
 	}
 	int j;
 	for(j=0;j< numProc;j++){
