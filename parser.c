@@ -315,6 +315,9 @@ int varDeclaration(char token, char tokens[], int numVars, int lexLevel, int par
 
 int procDeclaration(char token, char tokens, int lexLevel){
 	int numProc = 0;
+	int procId = 0;
+	char identName[500] = {};
+	char identName2[500] = {};
 
 	// procsym
 	if(token == 30){
@@ -326,11 +329,17 @@ int procDeclaration(char token, char tokens, int lexLevel){
 				printf("Error: Next token must be identifier\n"); // CHECK THIS ERROR MESSAGE
 				exit(0);
 			}
-			if(symbolTableCheck(token, lexLevel) != -1){
+			if(symbolTableCheck(token, tokens, lexLevel) != -1){
 				printf("Error: This wasn't foun\n"); // CHECK THIS ERROR MESSAGE
 				exit(0);
 			}
-			procId = // end of symbol table
+
+			// end of symbol table
+			procId = symbol_table_id;
+
+			// get identifier name
+			strcpy(identName, getIdentifier(identName, tokens));
+
 
 			// Add to symbol table
 			symbol_table[symbol_table_id].kind = 3;
@@ -338,7 +347,7 @@ int procDeclaration(char token, char tokens, int lexLevel){
 			symbol_table[symbol_table_id].val = procedureCount;
 			symbol_table[symbol_table_id].level = lexLevel;
 			symbol_table[symbol_table_id].addr = 0;
-			symbol_table[symbol_table_id].mark = param;
+			symbol_table[symbol_table_id].mark = 0;
 			symbol_table[symbol_table_id].param = 0;
 			symbol_table_id++;
 
@@ -353,9 +362,13 @@ int procDeclaration(char token, char tokens, int lexLevel){
 					printf("Error: \n"); // CHECK THIS ERROR MESSAGE
 					exit(0);
 				}
+
+				// get identifier name
+				strcpy(identName2, getIdentifier(identName2, tokens));
+
 				// Add to symbol table
 				symbol_table[symbol_table_id].kind = 2;
-				strcpy(symbol_table[symbol_table_id].name, identName);
+				strcpy(symbol_table[symbol_table_id].name, identName2);
 				symbol_table[symbol_table_id].val = 0;
 				symbol_table[symbol_table_id].level = lexLevel + 1;
 				symbol_table[symbol_table_id].addr = 3;
