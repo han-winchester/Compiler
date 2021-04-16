@@ -356,6 +356,7 @@ int procDeclaration(char token, char tokens[], int lexLevel){
 			procedureCount++;
 
 			token = getNextToken(tokens);
+
 			//lparentsym
 			if(token == 15){
 				token = getNextToken(tokens);
@@ -397,7 +398,7 @@ int procDeclaration(char token, char tokens[], int lexLevel){
 
 				token = getNextToken(tokens);
 
-				block(token, tokens, lexLevel + 1, 1, procId);
+				token = block(token, tokens, lexLevel + 1, 1, procId);
 			}
 			else{
 				//semicolonsym
@@ -408,7 +409,7 @@ int procDeclaration(char token, char tokens[], int lexLevel){
 
 				token = getNextToken(tokens);
 
-				block(token, tokens, lexLevel+1, 0, procId);
+				token = block(token, tokens, lexLevel+1, 0, procId);
 			}
 
 			if(!strcmp(code[codeId-1].op, "OPR") && code[codeId-1].m != 0){
@@ -420,7 +421,7 @@ int procDeclaration(char token, char tokens[], int lexLevel){
 
 			// semicolonsym
 			if(token != 18){
-				printf("Error: symbol declarations must be followed by a semicolon 3 \n"); 
+				printf("Error: symbol declarations must be followed by a semicolon %d\n", token); 
 				exit(0);
 			}
 
@@ -737,7 +738,7 @@ int statement(char token, char tokens[], int lexLevel){
 		}
 		symId = symbolTableSearch(token, tokens, lexLevel, 3); // CHECK PARAMETER ARGUMENTS
 		if(symId == -1){
-			printf("Error: undeclared variable or constant in equation\n");// CHECK THIS ERROR MESSAGE
+			printf("Error: undeclared variable or constant in equation %d\n", token);// CHECK THIS ERROR MESSAGE
 			exit(0);
 		}
 		token = getNextToken(tokens);
@@ -969,7 +970,7 @@ int program(char token, char tokens[]){
 	int i;
 	for(i=0;i<=strlen(tokens);i++){
 		//procsym
-		if(token == 30){
+		if(tokens[i] == 30){
 			numProc++;
 			emit(lineNum, "JMP", 0, 0);
 			lineNum++;
