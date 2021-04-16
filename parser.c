@@ -328,7 +328,7 @@ int procDeclaration(char token, char tokens[], int lexLevel){
 			token = getNextToken(tokens);
 			//identsym
 			if(token != 2){
-				printf("Error: Next token must be identifier\n"); // CHECK THIS ERROR MESSAGE
+				printf("Error: const, var, procedure, call, and read keywords must be followed by identifier\n"); 
 				exit(0);
 			}
 			if(symbolTableCheck(token, tokens, lexLevel) != -1){
@@ -361,7 +361,7 @@ int procDeclaration(char token, char tokens[], int lexLevel){
 				token = getNextToken(tokens);
 				//identsym
 				if(token != 2){
-					printf("Error: \n"); // CHECK THIS ERROR MESSAGE
+					printf("const, var, procedure, call, and read keywords must be followed by identifier \n");
 					exit(0);
 				}
 
@@ -383,7 +383,7 @@ int procDeclaration(char token, char tokens[], int lexLevel){
 
 				//rparentsym
 				if(token != 16){
-					printf("Error: \n"); // CHECK THIS ERROR MESSAGE
+					printf("Error: right parenthesis must follow left parenthesis\n"); 
 					exit(0);
 				}
 
@@ -391,7 +391,7 @@ int procDeclaration(char token, char tokens[], int lexLevel){
 
 				//semicolonsym
 				if(token != 18){
-					printf("Error: \n"); // CHECK THIS ERROR MESSAGE
+					printf("Error: symbol declarations must be followed by a semicolon 1\n"); 
 					exit(0);
 				}
 
@@ -402,7 +402,7 @@ int procDeclaration(char token, char tokens[], int lexLevel){
 			else{
 				//semicolonsym
 				if(token != 18){
-					printf("Error: \n"); //CHECK THIS ERROR MESSAGE
+					printf("Error: symbol declarations must be followed by a semicolon 2 \n"); 
 					exit(0);
 				}
 
@@ -420,7 +420,7 @@ int procDeclaration(char token, char tokens[], int lexLevel){
 
 			// semicolonsym
 			if(token != 18){
-				printf("Error: \n"); // CHECK THIS ERROR MESSAGE
+				printf("Error: symbol declarations must be followed by a semicolon 3 \n"); 
 				exit(0);
 			}
 
@@ -732,12 +732,12 @@ int statement(char token, char tokens[], int lexLevel){
 		token = getNextToken(tokens);
 		// identsym
 		if(token != 2){
-			printf("Error:\n"); // CHECK THIS ERROR MESSAGE
+			printf("const, var, procedure, call, and read keywords must be followed by identifier\n");
 			exit(0);
 		}
 		symId = symbolTableSearch(token, tokens, lexLevel, 3); // CHECK PARAMETER ARGUMENTS
 		if(symId == -1){
-			printf("Error:\n");// CHECK THIS ERROR MESSAGE
+			printf("Error: undeclared variable or constant in equation\n");// CHECK THIS ERROR MESSAGE
 			exit(0);
 		}
 		token = getNextToken(tokens);
@@ -746,13 +746,13 @@ int statement(char token, char tokens[], int lexLevel){
 		if(token == 15){
 			token = getNextToken(tokens);
 			if(symbol_table[symId].param != 1){
-				printf("Error:\n"); // CHECK THIS ERROR MESSAGE
+				printf("Error: parameters must be declared\n"); 
 				exit(0);
 			}
 			token = expression(token, tokens, lexLevel);
 			//rparentsym
 			if(token != 16){
-				printf("Error:\n"); // CHECK THIS ERROR MESSAGE
+				printf("Error: right parenthesis must follow left parenthesis\n"); 
 				exit(0);
 			}
 			token = getNextToken(tokens);
@@ -770,7 +770,7 @@ int statement(char token, char tokens[], int lexLevel){
 	//returnsym
 	if(token == 34){
 		if(lexLevel == 0){
-			printf("Error:\n"); // CHECK THIS ERROR MESSAGE
+			printf("Error: cannot return from main\n");
 			exit(0);
 		}
 		token = getNextToken(tokens);
@@ -783,7 +783,7 @@ int statement(char token, char tokens[], int lexLevel){
 			lineNum++;
 			// rparentsym
 			if(token != 16){
-				printf("Error:\n"); // CHECK THIS ERROR MESSAGE
+				printf("Error: right parenthesis must follow left parenthesis\n");
 			}
 			token = getNextToken(tokens);
 		}
