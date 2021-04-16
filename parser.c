@@ -30,6 +30,8 @@ instructions code[500] = {};
 
 // function header declaration
 int expression(char token, char tokens[], int lexLevel);
+int block(char token, char tokens[], int lexLevel, int param, int procedureId);
+int statement(char token, char tokens[], int lexLevel);
 
 int outputAssembly(){
 	int i = 0;
@@ -313,7 +315,7 @@ int varDeclaration(char token, char tokens[], int numVars, int lexLevel, int par
 	}
 }
 
-int procDeclaration(char token, char tokens, int lexLevel){
+int procDeclaration(char token, char tokens[], int lexLevel){
 	int numProc = 0;
 	int procId = 0;
 	char identName[500] = {};
@@ -409,7 +411,7 @@ int procDeclaration(char token, char tokens, int lexLevel){
 				block(token, tokens, lexLevel+1, 0, procId);
 			}
 
-			if(code[codeId-1].op != 2 && code[codeId-1].m != 0){
+			if(!strcmp(code[codeId-1].op, "OPR") && code[codeId-1].m != 0){
 				emit(lineNum, "LIT", 0, 0);
 				lineNum++;
 				emit(lineNum, "OPR", lexLevel, 0);
@@ -965,7 +967,7 @@ int program(char token, char tokens[]){
 	lineNum++;
 
 	int i;
-	for(i=0;i<=sizeof(tokens);i++){
+	for(i=0;i<=strlen(tokens);i++){
 		//procsym
 		if(token == 30){
 			numProc++;
@@ -998,7 +1000,7 @@ int program(char token, char tokens[]){
 	}
 
 	int k;
-	for(k=0;k<=code;k++){
+	for(k=0;k<=sizeof(code);k++){
 		if(!strcmp(code[j].op, "CAL")){
 			code[j].m = symbol_table[findProcedure(lineNum)].addr;
 		}
