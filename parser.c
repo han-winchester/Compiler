@@ -424,7 +424,7 @@ int procDeclaration(char token, char tokens[], int lexLevel){
 				printf("Error: symbol declarations must be followed by a semicolon %d\n", token); 
 				exit(0);
 			}
-
+			
 			token = getNextToken(tokens);
 		}while(token == 30);
 	}
@@ -738,7 +738,7 @@ int statement(char token, char tokens[], int lexLevel){
 		}
 		symId = symbolTableSearch(token, tokens, lexLevel, 3); // CHECK PARAMETER ARGUMENTS
 		if(symId == -1){
-			printf("Error: undeclared variable or constant in equation %d\n", token);// CHECK THIS ERROR MESSAGE
+			printf("Error: undeclared variable or constant in equation %d\n", tokens[tokensId]);// CHECK THIS ERROR MESSAGE
 			exit(0);
 		}
 		token = getNextToken(tokens);
@@ -810,7 +810,7 @@ int statement(char token, char tokens[], int lexLevel){
 			printf("Error: begin must be followed by end\n");
 			exit(0);
 		}
-		token = tokens[tokensId]; 
+		token = getNextToken(tokens); 
 
 		return token;
 	}
@@ -938,6 +938,7 @@ int block(char token, char tokens[], int lexLevel, int param, int procedureId){
 	//varsym
 	if(token == 29){
 		numVars = varDeclaration(token, tokens, numVars, lexLevel, param);
+		token = getNextToken(tokens);
 		emit(lineNum, "INC", 0, numVars+4);
 		lineNum++;
 	}
@@ -945,6 +946,7 @@ int block(char token, char tokens[], int lexLevel, int param, int procedureId){
 	// procsym
 	if(token == 30){
 		p = procDeclaration(token, tokens, lexLevel);
+		token = getNextToken(tokens);
 	}
 
 	symbol_table[procedureId].addr = lineNum;
@@ -952,8 +954,6 @@ int block(char token, char tokens[], int lexLevel, int param, int procedureId){
 	emit(lineNum, "INC", lexLevel, numVars+4);
 	lineNum++;
 	
-	token = getNextToken(tokens);
-
 	token = statement(token, tokens, lexLevel); 
 
 	mark(c+numVars+p);
