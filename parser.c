@@ -916,7 +916,7 @@ int block(char token, char tokens[], int lexLevel, int param, int procedureId){
 	// constsym
 	if(token == 28){
 		c = constDeclaration(token, tokens, lexLevel);
-		token = getNextToken(tokens);
+		token = getNextToken(tokens); // check this as well
 	}
 
 	//varsym
@@ -973,7 +973,7 @@ int program(char token, char tokens[]){
 
 	procedureCount++;
 
-	token = block(token, tokens, 0, 1, 0);
+	token = block(token, tokens, 0, 0, 0);
 	//periodsym
 	if(token != 19){
 		printf("Error: Must end with period\n");
@@ -981,19 +981,15 @@ int program(char token, char tokens[]){
 	}
 	int j;
 	for(j=0;j< numProc;j++){
-		code[j].m = symbol_table[findProcedure(j).addr];
+		code[j].m = symbol_table[findProcedure(j)].addr;
 	}
 
-	token = block(token, tokens, 0, 0, 0);
-
-	token = getNextToken(tokens);
-
-	//periodsym
-	if(token != 19){
-		printf("Error: program must end with period\n");
-		exit(0);
+	int k;
+	for(k=0;k<=code;k++){
+		if(!strcmp(code[j].op, "CAL")){
+			code[j].m = symbol_table[findProcedure(lineNum)].addr;
+		}
 	}
-
 	emit(lineNum, "SYS", 0, 3);
 	lineNum++;
 
