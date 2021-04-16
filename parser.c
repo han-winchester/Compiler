@@ -980,7 +980,7 @@ int program(char token, char tokens[]){
 	}
 	int j;
 	for(j=0;j< numProc;j++){
-		code[j].m = symbol_table[findProcedure(j).addr;
+		code[j].m = symbol_table[findProcedure(j).addr];
 	}
 
 	token = block(token, tokens);
