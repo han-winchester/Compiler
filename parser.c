@@ -157,7 +157,7 @@ int symbolTableSearch(char token, char tokens[], int lexLevel, int kind){
 	}
 	// iterate through table array and check if name matches any entries
 	for(i=0;i<=MAX_SYMBOL_TABLE_SIZE;i++){
-		if(!(strcmp(identifier, symbol_table[i].name)) && (symbol_table[i].level == lexLevel) && (symbol_table[i].mark == 0) && (symbol_table[i].kind == kind)){ // strcmp returns 0 if the strings match
+		if(!(strcmp(identifier, symbol_table[i].name)) && (symbol_table[i].level == lexLevel) && (symbol_table[i].mark == 1) && (symbol_table[i].kind == kind)){ // strcmp returns 0 if the strings match
 			return i;
 		}
 	}
@@ -440,7 +440,7 @@ int factor(char token, char tokens[], int lexLevel){
 		symIdV = symbolTableSearch(token, tokens, lexLevel, 2);
 		symIdC = symbolTableSearch(token, tokens, lexLevel, 1);
 		if(symIdV == -1 && symIdC == -1){
-			printf("Error: undeclared symbol \n");
+			printf("Error: undeclared symbol 1\n");
 			exit(0);
 		}
 		else if(symIdC == -1 || symIdV != -1 && symbol_table[symIdV].level > symbol_table[symIdC].level){
@@ -697,7 +697,7 @@ int statement(char token, char tokens[], int lexLevel){
 	if(token == 2){
 		symId = symbolTableSearch(token, tokens, lexLevel, 2); // CHECK THIS PARAMETER ARGUMENTS
 		if(symId == -1){
-			printf("Error: undeclared symbol\n");
+			printf("Error: undeclared symbol %d\n", tokens[tokensId]);
 			exit(0);
 		}
 		// not a var
