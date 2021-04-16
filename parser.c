@@ -398,7 +398,9 @@ int procDeclaration(char token, char tokens, int lexLevel){
 
 			if(code[codeId-1].op != 2 && code[codeId-1].m != 0){
 				emit(/*LIT M = 0*/);
+				lineNum++;
 				emit(/*RTN*/);
+				lineNum++;
 			}
 
 			// semicolonsym
@@ -430,7 +432,7 @@ int factor(char token, char tokens[], int lexLevel){
 			lineNum++;
 		}
 		else{
-			emit(lineNum, "LIT", 0, symbol_table[symIdC].val);
+			emit(lineNum, "LIT", 0, symbol_table[symIdC].val); // double check this
 			lineNum++;
 		}
 
@@ -741,9 +743,11 @@ int statement(char token, char tokens[], int lexLevel){
 			token = getNextToken(tokens);
 		}
 		else{
-			emit(/*LIT 0 */);
+			emit(lineNum, "LIT", 0, 0);
+			lineNum++;
 		}
 		emit(/*CAL L=lexLevel - symboltable[symId].level, M= symboltable[symId].value*/);
+		lineNum++;
 
 		return token;
 	}
@@ -761,6 +765,7 @@ int statement(char token, char tokens[], int lexLevel){
 			token = getNextToken(tokens);
 			token = expression(token, tokens, lexLevel);
 			emit(/*RTN*/);
+			lineNum++;
 			// rparentsym
 			if(token != 16){
 				printf("Error:\n"); // CHECK THIS ERROR MESSAGE
@@ -768,8 +773,10 @@ int statement(char token, char tokens[], int lexLevel){
 			token = getNextToken(tokens);
 		}
 		else{
-			emit(/*LIT 0*/);
+			emit(lineNum, "LIT", 0, 0);
+			lineNum++;
 			emit(/*RTN*/);
+			lineNum++;
 		}
 		return token;
 	}
@@ -815,6 +822,7 @@ int statement(char token, char tokens[], int lexLevel){
 			token = getNextToken(tokens);
 			jpcId = lineNum;
 			emit(lineNum, "JMP", lexLevel, 0);
+			lineNum++;
 			code[jpcId].m = lineNum;
 			token = statement(token, tokens, lexLevel);
 			code[jpcId].m = lineNum;
@@ -923,7 +931,7 @@ int block(char token, char tokens[], int lexLevel, int param, int procedureId){
 		p = procDeclaration(token, tokens, lexLevel);
 	}
 
-	symbol_table[procedureId].addr = //current code index
+	symbol_table[procedureId].addr = lineNum;
 
 	emit(lineNum, "INC", lexLevel, numVars+4);
 	lineNum++;
@@ -941,6 +949,7 @@ int program(char token, char tokens[]){
 	int numProc = 1;
 
 	emit(lineNum, "JMP", 0, 0);
+	lineNum++;
 
 	int i;
 	for(i=0;i<=sizeof(tokens);i++){
@@ -948,6 +957,7 @@ int program(char token, char tokens[]){
 		if(token == 30){
 			numProc++;
 			emit(lineNum, "JMP", 0, 0);
+			lineNum++;
 		}
 	}
 
@@ -984,6 +994,7 @@ int program(char token, char tokens[]){
 	}
 
 	emit(lineNum, "SYS", 0, 3);
+	lineNum++;
 
 	return 1;
 }
