@@ -7,7 +7,7 @@
 #include <string.h>
 #include "compiler.h"
 
-#define MAX_SYMBOL_TABLE_SIZE 500
+#define MAX_SYMBOL_TABLE_SIZE 550
 
 typedef struct symbol{ 
 	int kind; 		// const = 1, var = 2
@@ -26,7 +26,7 @@ int symbol_table_id = 0;
 int lineNum = 0; // also opcode, NOT LEXICAL GRAPHICAL LEVEL
 int codeId = 0; 
 symbol symbol_table[MAX_SYMBOL_TABLE_SIZE] = {}; // initialize symbol table
-instructions code[500] = {};
+instructions code[550] = {};
 
 // function header declaration
 int expression(char token, char tokens[], int lexLevel);
@@ -102,13 +102,17 @@ char* getIdentifier(char identName[], char tokens[]){
 int getNextToken(char tokens[]){
 	char nextToken = tokens[tokensId];
 	tokensId++;
+	if(tokens[tokensId] == '\0'){
+		tokensId--;
+	}
 	return nextToken;
+	
 }
 
 // linear search through symbol table looking at name
 // return index if found -1 if not
 int symbolTableCheck(char token, char tokens[], int lexLevel){
-	char identifier[500] = {};
+	char identifier[12] = {};
 	int i = 0; int g = 0;
 
 	do{
@@ -138,7 +142,7 @@ int symbolTableCheck(char token, char tokens[], int lexLevel){
 /* linear search through symbol table looking at name and kind
 returns index for exact match of string and kind unmarked, -1 if not */
 int symbolTableSearch(char token, char tokens[], int lexLevel, int kind){
-	char identifier[500] = {};
+	char identifier[12] = {};
 	int i = 0; int g = 0;
 
 	do{
@@ -156,20 +160,23 @@ int symbolTableSearch(char token, char tokens[], int lexLevel, int kind){
 		tokensId--;
 	}
 	// iterate through table array and check if name matches any entries
-	for(i=0;i<=MAX_SYMBOL_TABLE_SIZE;i++){
-		if(!(strcmp(identifier, symbol_table[i].name)) && (symbol_table[i].level == lexLevel) && (symbol_table[i].mark == 1) && (symbol_table[i].kind == kind)){ // strcmp returns 0 if the strings match
+	for(i=0;i<=symbol_table_id;i++){
+		//printf("Searching For: %s %d %d %d\n", identifier, lexLevel, 0, kind);
+		//printf("IN TABLE[%d]: %s %d %d %d\n", i,symbol_table[i].name, symbol_table[i].level, symbol_table[i].mark, symbol_table[i].kind);
+		if(!(strcmp(identifier, symbol_table[i].name)) && (symbol_table[i].level <= lexLevel) && (symbol_table[i].mark == 0) && (symbol_table[i].kind == kind)){ // strcmp returns 0 if the strings match
+			//printf("Returned successfully\n");
 			return i;
 		}
 	}
-
+	//printf("Returned -1 \n");
 	return -1;
 }
 
 // linear search through symbol table looking at procedure values return index if found, -1 if not
-int findProcedure(){
+int findProcedure(int id){
 	int i;
-	for(i=0;i<=MAX_SYMBOL_TABLE_SIZE;i++){
-		if(symbol_table[i].kind == 3){
+	for(i=0;i<=symbol_table_id;i++){
+		if(symbol_table[i].kind == 3 && id == symbol_table[i].val){
 			return i;
 		}
 	}
@@ -179,12 +186,18 @@ int findProcedure(){
 // starting from the end of the symbol table and looping backward if entry is unmarked, mark it
 int mark(int count){
 	int i;
-	for(i=MAX_SYMBOL_TABLE_SIZE;i>=0;i--){
+	for(i=symbol_table_id;i>=0;i--){
 		if(symbol_table[i].mark == 0){
 			symbol_table[i].mark = 1;
+			count--;
+			if(count == 0){
+				return 1;
+			}
+		}
+		if(count == 0){
+			return 1;
 		}
 	}
-
 }
 
 int constDeclaration(char token, char tokens[], int lexLevel){
@@ -193,7 +206,7 @@ int constDeclaration(char token, char tokens[], int lexLevel){
 	if(token == 28){
 		do{
 			numConst++;
-			char identName[500] = {};
+			char identName[12] = {};
 			//int identNameId = 0;
 
 			token = getNextToken(tokens);
@@ -273,7 +286,7 @@ int varDeclaration(char token, char tokens[], int numVars, int lexLevel, int par
 		do{
 			numVars++;
 			int identNameId =0;
-			char identName[500] = {};
+			char identName[12] = {};
 
 			token = getNextToken(tokens);
 		
@@ -318,12 +331,13 @@ int varDeclaration(char token, char tokens[], int numVars, int lexLevel, int par
 int procDeclaration(char token, char tokens[], int lexLevel){
 	int numProc = 0;
 	int procId = 0;
-	char identName[500] = {};
-	char identName2[500] = {};
+
 
 	// procsym
 	if(token == 30){
 		do{
+			char identName[12] = {};
+			char identName2[12] = {};
 			numProc++;
 			token = getNextToken(tokens);
 			//identsym
@@ -332,7 +346,7 @@ int procDeclaration(char token, char tokens[], int lexLevel){
 				exit(0);
 			}
 			if(symbolTableCheck(token, tokens, lexLevel) != -1){
-				printf("Error: This wasn't foun\n"); // CHECK THIS ERROR MESSAGE
+				printf("Error: symbol name has already been declared\n");
 				exit(0);
 			}
 
@@ -362,7 +376,7 @@ int procDeclaration(char token, char tokens[], int lexLevel){
 				token = getNextToken(tokens);
 				//identsym
 				if(token != 2){
-					printf("const, var, procedure, call, and read keywords must be followed by identifier \n");
+					printf("parameters may only be specified by an identifier \n");
 					exit(0);
 				}
 
@@ -403,16 +417,17 @@ int procDeclaration(char token, char tokens[], int lexLevel){
 			else{
 				//semicolonsym
 				if(token != 18){
-					printf("Error: symbol declarations must be followed by a semicolon 2 \n"); 
+					printf("Error: symbol declarations must be followed by a semicolon\n"); 
 					exit(0);
 				}
 
 				token = getNextToken(tokens);
 
 				token = block(token, tokens, lexLevel+1, 0, procId);
+				
 			}
 
-			if(!strcmp(code[codeId-1].op, "OPR") && code[codeId-1].m != 0){
+			if(!strcmp(code[lineNum-1].op, "OPR") && code[lineNum-1].m != 0){
 				emit(lineNum, "LIT", 0, 0);
 				lineNum++;
 				emit(lineNum, "OPR", lexLevel, 0);
@@ -421,13 +436,14 @@ int procDeclaration(char token, char tokens[], int lexLevel){
 
 			// semicolonsym
 			if(token != 18){
-				printf("Error: symbol declarations must be followed by a semicolon %d\n", token); 
+				printf("Error: symbol declarations must be followed by a semicolon\n"); 
 				exit(0);
 			}
 			
 			token = getNextToken(tokens);
 		}while(token == 30);
 	}
+	tokensId--;
 	return numProc;
 }
 
@@ -440,7 +456,7 @@ int factor(char token, char tokens[], int lexLevel){
 		symIdV = symbolTableSearch(token, tokens, lexLevel, 2);
 		symIdC = symbolTableSearch(token, tokens, lexLevel, 1);
 		if(symIdV == -1 && symIdC == -1){
-			printf("Error: undeclared symbol 1\n");
+			printf("Error: competing symbol declarations at the same level\n");
 			exit(0);
 		}
 		else if(symIdC == -1 || symIdV != -1 && symbol_table[symIdV].level > symbol_table[symIdC].level){
@@ -448,7 +464,7 @@ int factor(char token, char tokens[], int lexLevel){
 			lineNum++;
 		}
 		else{
-			emit(lineNum, "LIT", 0, symbol_table[symIdC].val); // double check this
+			emit(lineNum, "LIT", lexLevel, symbol_table[symIdC].val);
 			lineNum++;
 		}
 
@@ -695,9 +711,9 @@ int statement(char token, char tokens[], int lexLevel){
 	
 	// identsym
 	if(token == 2){
-		symId = symbolTableSearch(token, tokens, lexLevel, 2); // CHECK THIS PARAMETER ARGUMENTS
+		symId = symbolTableSearch(token, tokens, lexLevel, 2);
 		if(symId == -1){
-			printf("Error: undeclared symbol %d\n", tokens[tokensId]);
+			printf("Error: undeclared variable or constant in equation\n");
 			exit(0);
 		}
 		// not a var
@@ -730,18 +746,23 @@ int statement(char token, char tokens[], int lexLevel){
 	}
 	// callsym
 	if(token == 27){
+
 		token = getNextToken(tokens);
 		// identsym
 		if(token != 2){
 			printf("const, var, procedure, call, and read keywords must be followed by identifier\n");
 			exit(0);
 		}
-		symId = symbolTableSearch(token, tokens, lexLevel, 3); // CHECK PARAMETER ARGUMENTS
+		symId = symbolTableSearch(token, tokens, lexLevel, 3);
 		if(symId == -1){
-			printf("Error: undeclared variable or constant in equation %d\n", tokens[tokensId]);// CHECK THIS ERROR MESSAGE
+			printf("Error: procedure call\n");
 			exit(0);
 		}
-		token = getNextToken(tokens);
+
+		do{
+			token = getNextToken(tokens);
+		}
+		while(token>47);
 
 		// lparentsym
 		if(token == 15){
@@ -800,18 +821,22 @@ int statement(char token, char tokens[], int lexLevel){
 	// beginsym
 	if(token == 21){
 		do{
+			
 			token = getNextToken(tokens);
-
+			
 			token = statement(token, tokens, lexLevel);
+			
+			
 		}while(token == 18); //semicolon
-		
+
 		// endsym
 		if(token != 22){
 			printf("Error: begin must be followed by end\n");
 			exit(0);
 		}
-		token = getNextToken(tokens); 
-
+		
+		token = getNextToken(tokens);
+		
 		return token;
 	}
 	// ifsym
@@ -939,13 +964,12 @@ int block(char token, char tokens[], int lexLevel, int param, int procedureId){
 	if(token == 29){
 		numVars = varDeclaration(token, tokens, numVars, lexLevel, param);
 		token = getNextToken(tokens);
-		emit(lineNum, "INC", 0, numVars+4);
-		lineNum++;
 	}
 
 	// procsym
 	if(token == 30){
 		p = procDeclaration(token, tokens, lexLevel);
+		
 		token = getNextToken(tokens);
 	}
 
@@ -955,8 +979,11 @@ int block(char token, char tokens[], int lexLevel, int param, int procedureId){
 	lineNum++;
 	
 	token = statement(token, tokens, lexLevel); 
-
+	
+	
 	mark(c+numVars+p);
+	
+	
 	
 	return token;
 }
@@ -990,9 +1017,10 @@ int program(char token, char tokens[]){
 	procedureCount++;
 
 	token = block(token, tokens, 0, 0, 0);
+	token = tokens[tokensId];
 	//periodsym
 	if(token != 19){
-		printf("Error: Must end with period\n");
+		printf("Error: program must end with period\n");
 		exit(0);
 	}
 	int j;
@@ -1001,9 +1029,9 @@ int program(char token, char tokens[]){
 	}
 
 	int k;
-	for(k=0;k<=sizeof(code);k++){
-		if(!strcmp(code[j].op, "CAL")){
-			code[j].m = symbol_table[findProcedure(lineNum)].addr;
+	for(k=0;k<=lineNum;k++){
+		if(!strcmp(code[k].op, "CAL")){
+			code[k].m = symbol_table[findProcedure(k)].addr;
 		}
 	}
 	emit(lineNum, "SYS", 0, 3);
@@ -1020,6 +1048,7 @@ void parser(char tokens[], int aflag, int vflag){
 
 	program(token, tokens);
 	printf("\n");
+	
 
 	// if the assembly directive was inputted then output the assembly
 	if( aflag == 1){ outputAssembly(); printf("\n");}
