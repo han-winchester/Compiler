@@ -26,7 +26,7 @@ int symbol_table_id = 0;
 int lineNum = 0; // also opcode, NOT LEXICAL GRAPHICAL LEVEL
 int codeId = 0; 
 symbol symbol_table[MAX_SYMBOL_TABLE_SIZE] = {}; // initialize symbol table
-instructions code[550] = {};
+instructions code[MAX_SYMBOL_TABLE_SIZE] = {};
 
 // function header declaration
 int expression(char token, char tokens[], int lexLevel);
@@ -102,9 +102,9 @@ char* getIdentifier(char identName[], char tokens[]){
 int getNextToken(char tokens[]){
 	char nextToken = tokens[tokensId];
 	tokensId++;
-	if(tokens[tokensId] == '\0'){
+	/*if(tokens[tokensId] == '\0'){
 		tokensId--;
-	}
+	}*/
 	return nextToken;
 	
 }
@@ -167,6 +167,9 @@ int symbolTableSearch(char token, char tokens[], int lexLevel, int kind){
 			//printf("Returned successfully\n");
 			return i;
 		}
+		else{
+			continue;
+		}
 	}
 	//printf("Returned -1 \n");
 	return -1;
@@ -175,11 +178,16 @@ int symbolTableSearch(char token, char tokens[], int lexLevel, int kind){
 // linear search through symbol table looking at procedure values return index if found, -1 if not
 int findProcedure(int id){
 	int i;
-	for(i=0;i<=symbol_table_id;i++){
+	for(i=0;i<=MAX_SYMBOL_TABLE_SIZE;i++){
 		if(symbol_table[i].kind == 3 && id == symbol_table[i].val){
 			return i;
+			printf("RETURNED SUCCESSFULLY %d\n", i);
+		}
+		else{
+			continue;
 		}
 	}
+	printf("DID NOT RETURN\n");
 	return -1;
 }
 
@@ -198,6 +206,7 @@ int mark(int count){
 			return 1;
 		}
 	}
+	return 1;
 }
 
 int constDeclaration(char token, char tokens[], int lexLevel){
@@ -425,9 +434,10 @@ int procDeclaration(char token, char tokens[], int lexLevel){
 
 				token = block(token, tokens, lexLevel+1, 0, procId);
 				
+				
 			}
-
-			if(!strcmp(code[lineNum-1].op, "OPR") && code[lineNum-1].m != 0){
+			
+			if(strcmp(code[lineNum-1].op, "OPR") && code[lineNum-1].m != 0){
 				emit(lineNum, "LIT", 0, 0);
 				lineNum++;
 				emit(lineNum, "OPR", lexLevel, 0);
@@ -440,10 +450,9 @@ int procDeclaration(char token, char tokens[], int lexLevel){
 				exit(0);
 			}
 			
-			token = getNextToken(tokens);
 		}while(token == 30);
 	}
-	tokensId--;
+	//tokensId--;
 	return numProc;
 }
 
@@ -708,7 +717,7 @@ int condition(char token, char tokens[], int lexLevel){
 // get statement
 int statement(char token, char tokens[], int lexLevel){
 	int symId = 0;
-	
+
 	// identsym
 	if(token == 2){
 		symId = symbolTableSearch(token, tokens, lexLevel, 2);
@@ -783,7 +792,8 @@ int statement(char token, char tokens[], int lexLevel){
 			emit(lineNum, "LIT", 0, 0);
 			lineNum++;
 		}
-		emit(lineNum, "CAL", lexLevel - symbol_table[symId].level, symbol_table[symId].val);
+
+		emit(lineNum, "CAL", lexLevel - symbol_table[symId].level, symbol_table[symId].addr);
 		lineNum++;
 
 		return token;
@@ -953,24 +963,21 @@ int statement(char token, char tokens[], int lexLevel){
 
 int block(char token, char tokens[], int lexLevel, int param, int procedureId){
 	int numVars = 0; int c = 0; int p = 0;
-
+	
 	// constsym
 	if(token == 28){
 		c = constDeclaration(token, tokens, lexLevel);
-		token = getNextToken(tokens); // check this as well
 	}
 
 	//varsym
 	if(token == 29){
 		numVars = varDeclaration(token, tokens, numVars, lexLevel, param);
-		token = getNextToken(tokens);
+		
 	}
 
 	// procsym
 	if(token == 30){
 		p = procDeclaration(token, tokens, lexLevel);
-		
-		token = getNextToken(tokens);
 	}
 
 	symbol_table[procedureId].addr = lineNum;
@@ -978,12 +985,14 @@ int block(char token, char tokens[], int lexLevel, int param, int procedureId){
 	emit(lineNum, "INC", lexLevel, numVars+4);
 	lineNum++;
 	
+	
+	//token = tokens[tokensId];
+	token = getNextToken(tokens);
+
 	token = statement(token, tokens, lexLevel); 
 	
 	
 	mark(c+numVars+p);
-	
-	
 	
 	return token;
 }
@@ -1017,7 +1026,7 @@ int program(char token, char tokens[]){
 	procedureCount++;
 
 	token = block(token, tokens, 0, 0, 0);
-	token = tokens[tokensId];
+
 	//periodsym
 	if(token != 19){
 		printf("Error: program must end with period\n");
@@ -1049,9 +1058,9 @@ void parser(char tokens[], int aflag, int vflag){
 	program(token, tokens);
 	printf("\n");
 	
-
+	
 	// if the assembly directive was inputted then output the assembly
 	if( aflag == 1){ outputAssembly(); printf("\n");}
 	
-	vm(code, vflag); // send assembly to vm
+	//vm(code, vflag); // send assembly to vm
 }

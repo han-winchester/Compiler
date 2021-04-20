@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include "compiler.h"
 
-#define MAX_STACK_HEIGHT 50
-#define MAX_CODE_LENGTH 100 // Will never be given an input file with more than this number of lines
+#define MAX_STACK_HEIGHT 550
+#define MAX_CODE_LENGTH 550 // Will never be given an input file with more than this number of lines
 
 // Instruction Register
 typedef struct instruction{
