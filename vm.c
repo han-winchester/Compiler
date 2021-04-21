@@ -378,7 +378,7 @@ void vm(struct instructions codeText[], int vflag){
 				stack[SP + 1] = base(stack, IR.L, BP); // Static link SL
 				stack[SP + 2] = BP;					// Dynamic Link DL
 				stack[SP + 3] = PC;					// Return Address RA
-				stack[SP + 4] = stack[SP];			// Parameter P
+				stack[SP + 4] = stack[SP];			// Parameter P																					// THIS LINE
 				oldBP = BP;	// get oldBP to remember where the base pointers are for the Activation Records to print | to separate the AR's
 				BP = SP + 1;
 				PC = IR.M;

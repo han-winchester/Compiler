@@ -39,7 +39,7 @@ int outputAssembly(){
     printf("Generated Assembly: \n");
     printf("Line    OP   L   M\n");
 
-	for(i=0;i<=lineNum;i++){ printf("%d	%s   %d   %d\n", code[i].opcode, code[i].op, code[i].level, code[i].m); } // outputs the assembly line by line
+	for(i=0;i<lineNum;i++){ printf("%d	%s   %d   %d\n", code[i].opcode, code[i].op, code[i].level, code[i].m); } // outputs the assembly line by line
 
 	printf("\n");
 	
@@ -181,13 +181,11 @@ int findProcedure(int id){
 	for(i=0;i<=MAX_SYMBOL_TABLE_SIZE;i++){
 		if(symbol_table[i].kind == 3 && id == symbol_table[i].val){
 			return i;
-			printf("RETURNED SUCCESSFULLY %d\n", i);
 		}
 		else{
 			continue;
 		}
 	}
-	printf("DID NOT RETURN\n");
 	return -1;
 }
 
@@ -449,6 +447,7 @@ int procDeclaration(char token, char tokens[], int lexLevel){
 				printf("Error: symbol declarations must be followed by a semicolon\n"); 
 				exit(0);
 			}
+			
 			
 		}while(token == 30);
 	}
@@ -982,7 +981,7 @@ int block(char token, char tokens[], int lexLevel, int param, int procedureId){
 
 	symbol_table[procedureId].addr = lineNum;
 
-	emit(lineNum, "INC", lexLevel, numVars+4);
+	emit(lineNum, "INC", 0, numVars+4);
 	lineNum++;
 	
 	
@@ -1029,7 +1028,7 @@ int program(char token, char tokens[]){
 
 	//periodsym
 	if(token != 19){
-		printf("Error: program must end with period\n");
+		printf("Error: program must end with period %d\n", token);
 		exit(0);
 	}
 	int j;
@@ -1037,12 +1036,12 @@ int program(char token, char tokens[]){
 		code[j].m = symbol_table[findProcedure(j)].addr;
 	}
 
-	int k;
+	/*int k;
 	for(k=0;k<=lineNum;k++){
 		if(!strcmp(code[k].op, "CAL")){
 			code[k].m = symbol_table[findProcedure(k)].addr;
 		}
-	}
+	}*/
 	emit(lineNum, "SYS", 0, 3);
 	lineNum++;
 
@@ -1062,5 +1061,5 @@ void parser(char tokens[], int aflag, int vflag){
 	// if the assembly directive was inputted then output the assembly
 	if( aflag == 1){ outputAssembly(); printf("\n");}
 	
-	//vm(code, vflag); // send assembly to vm
+	vm(code, vflag); // send assembly to vm
 }
