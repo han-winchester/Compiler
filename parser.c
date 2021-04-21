@@ -512,8 +512,8 @@ void expression(  char tokens[], int lexLevel){
 		while(token == 4 || token == 5){
 			if(token == 4){
 				// skips over identifier
-				char identifier[12] = {};
-				strcpy(identifier, getIdentifier(identifier, tokens));
+				while(tokens[tokensId] > 47){ tokensId++; }
+		
 				getNextToken(tokens);
 
 				term(tokens, lexLevel);
@@ -524,8 +524,8 @@ void expression(  char tokens[], int lexLevel){
 			}
 			else{
 				// skips over identifier
-				char identifier[12] = {};
-				strcpy(identifier, getIdentifier(identifier, tokens));
+				while(tokens[tokensId] > 47){ tokensId++; }
+		
 				getNextToken(tokens);
 
 				term(tokens, lexLevel);
@@ -540,8 +540,8 @@ void expression(  char tokens[], int lexLevel){
 		//plussym
 		if(token == 4){
 			// skips over identifier
-			char identifier[12] = {};
-			strcpy(identifier, getIdentifier(identifier, tokens));
+			while(tokens[tokensId] > 47){ tokensId++; }
+		
 			getNextToken(tokens);
 			
 		}
@@ -669,8 +669,8 @@ void statement(char tokens[], int lexLevel){
 		}
 
 		// skips over identifier
-		char identifier[12] = {};
-		strcpy(identifier, getIdentifier(identifier, tokens));
+		while(tokens[tokensId] > 47){ tokensId++; }
+		
 		getNextToken(tokens);
 
 		// becomessym
@@ -862,9 +862,9 @@ void statement(char tokens[], int lexLevel){
 			exit(0);
 		}
 		
-		// skip over identifier
-		do{ tokensId++; }while(tokens[tokensId] > 47);
-
+		// skips over identifier
+		while(tokens[tokensId] > 47){ tokensId++; }
+		
 		getNextToken(tokens);
 
 		emit(lineNum, "SYS", 0, 2);
