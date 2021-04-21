@@ -84,17 +84,6 @@ void emit(int opcode, char op[], int level, int m){
 	codeId++;
 }
 
-// parameters: empty array for identifier name or number, list of tokens
-// returns: the char pointer to identifier name or number
-char* getIdentifier(char identName[], char tokens[]){
-	int identNameId = 0;
-	do{
-		identName[identNameId] = tokens[tokensId]; // copy token from list to identName array
-		identNameId++; tokensId++;
-	}while(tokens[tokensId] > 47); // ascii value is greater than 47 (i.e. letter or number)
-	return identName;
-}
-
 // parameters: list of tokens
 // returns: the next token in the token list specified by tokensId
 void getNextToken(char tokens[]){
@@ -102,29 +91,49 @@ void getNextToken(char tokens[]){
 	tokensId++;
 }
 
-// linear search through symbol table looking at name
-// return index if found -1 if not
-int symbolTableCheck(  char tokens[], int lexLevel){
-	char identifier[12] = {};
-	int i = 0; int g = 0;
-
+// parameters: empty array for identifier name or number, list of tokens
+// returns: the char pointer to identifier name or number
+char* getIdentifier(char identName[], char tokens[]){
+	int identNameId = 0;
 	do{
 		getNextToken(tokens);
+		identName[identNameId] = token; // copy token from list to identName array
+		identNameId++;
+	}while(tokens[tokensId] > 47); // ascii value is greater than 47 (i.e. letter or number)
+	return identName;
+}
 
-		// pass name into identifier to compare strings in symbol table
-		identifier[g] = token;
-		g++;
-	}while(tokens[tokensId] > 47);
+// parameters: attributes of symbol struct for symbol_table
+// returns: adds these values to symbol_table at index symbol_table_id
+void addToSymbolTable(int kind, char name[], int val, int level, int addr, int mark, int param){
+	
+	symbol_table[symbol_table_id].kind = kind;
+	strcpy(symbol_table[symbol_table_id].name, name);
+	symbol_table[symbol_table_id].val = val;
+	symbol_table[symbol_table_id].level = level;
+	symbol_table[symbol_table_id].addr = addr;
+	symbol_table[symbol_table_id].mark = mark;
+	symbol_table[symbol_table_id].param = param;
+	symbol_table_id++;
+}
 
-	int y = 0;
+// linear search through symbol table looking at name
+// return index if found -1 if not
+int symbolTableCheck(char tokens[], int lexLevel){
+	char identifier[12] = {};
+	int i = 0; int identifierId = 0;
+	
+	// Get identifier name
+	strcpy(identifier, getIdentifier(identifier, tokens));
+
 	// iterate through identifier array to decrement o to not skip over tokens in tokens[tokensId] when returning from this function
-	while(identifier[y] != '\0'){
-		y++;
+	while(identifier[identifierId] != '\0'){
+		identifierId++;
 		tokensId--;
 	}
 
 	// iterate through table array and check if name matches any entries
-	for(i=0;i<=MAX_SYMBOL_TABLE_SIZE;i++){
+	for(i=0;i<=symbol_table_id;i++){
 		if(!(strcmp(identifier, symbol_table[i].name)) && (symbol_table[i].level == lexLevel) && (symbol_table[i].mark == 0)){ // strcmp returns 0 if the strings match
 			return i;
 		}
@@ -136,68 +145,47 @@ int symbolTableCheck(  char tokens[], int lexLevel){
 returns index for exact match of string and kind unmarked, -1 if not */
 int symbolTableSearch(  char tokens[], int lexLevel, int kind){
 	char identifier[12] = {};
-	int i = 0; int g = 0;
+	int i = 0; int identifierId = 0;
 
-	do{
-		getNextToken(tokens);
+	// Get identifier name
+	strcpy(identifier, getIdentifier(identifier, tokens));
 
-		// pass name into identifier to compare strings in symbol table
-		identifier[g] = token;
-		g++;
-	}while(tokens[tokensId] > 47);
-
-	int y = 0;
 	// iterate through identifier array to decrement o to not skip over tokens in tokens[tokensId] when returning from this function
-	while(identifier[y] != '\0'){
-		y++;
+	while(identifier[identifierId] != '\0'){
+		identifierId++;
 		tokensId--;
 	}
 	// iterate through table array and check if name matches any entries
 	for(i=0;i<=symbol_table_id;i++){
-		//printf("Searching For: %s %d %d %d\n", identifier, lexLevel, 0, kind);
-		//printf("IN TABLE[%d]: %s %d %d %d\n", i,symbol_table[i].name, symbol_table[i].level, symbol_table[i].mark, symbol_table[i].kind);
 		if(!(strcmp(identifier, symbol_table[i].name)) && (symbol_table[i].level <= lexLevel) && (symbol_table[i].mark == 0) && (symbol_table[i].kind == kind)){ // strcmp returns 0 if the strings match
-			//printf("Returned successfully\n");
 			return i;
 		}
-		else{
-			continue;
-		}
 	}
-	//printf("Returned -1 \n");
 	return -1;
 }
 
 // linear search through symbol table looking at procedure values return index if found, -1 if not
 int findProcedure(int id){
 	int i;
-	for(i=0;i<=MAX_SYMBOL_TABLE_SIZE;i++){
+	for(i=0;i<=symbol_table_id;i++){
 		if(symbol_table[i].kind == 3 && id == symbol_table[i].val){
 			return i;
-		}
-		else{
-			continue;
 		}
 	}
 	return -1;
 }
 
 // starting from the end of the symbol table and looping backward if entry is unmarked, mark it
-int mark(int count){
+void mark(int count){
 	int i;
 	for(i=symbol_table_id;i>=0;i--){
 		if(symbol_table[i].mark == 0){
 			symbol_table[i].mark = 1;
 			count--;
-			if(count == 0){
-				return 1;
-			}
-		}
-		if(count == 0){
-			return 1;
+			if(count == 0){ return; }
 		}
 	}
-	return 1;
+	return;
 }
 
 int constDeclaration(char tokens[], int lexLevel){
@@ -248,15 +236,7 @@ int constDeclaration(char tokens[], int lexLevel){
 
 			getNextToken(tokens);
 
-			// Add to symbol table
-			symbol_table[symbol_table_id].kind = 1;
-			strcpy(symbol_table[symbol_table_id].name, identName);
-			symbol_table[symbol_table_id].val = numberDigit; 
-			symbol_table[symbol_table_id].level = lexLevel;
-			symbol_table[symbol_table_id].addr = 0;
-			symbol_table[symbol_table_id].mark = 0;
-			symbol_table[symbol_table_id].param = 0;
-			symbol_table_id++;
+			addToSymbolTable(1, identName, numberDigit, lexLevel, 0, 0, 0);
 
 		// commasym
 		}while(token == 17);
@@ -283,7 +263,6 @@ int varDeclaration(char tokens[], int numVars, int lexLevel, int param){
 	if(token == 29){
 		do{
 			numVars++;
-			int identNameId =0;
 			char identName[12] = {};
 
 			getNextToken(tokens);
@@ -294,7 +273,7 @@ int varDeclaration(char tokens[], int numVars, int lexLevel, int param){
 				exit(0);
 			}
 			// check if already in symbol table
-			if(symbolTableCheck(  tokens, lexLevel) != -1){
+			if(symbolTableCheck(tokens, lexLevel) != -1){
 				printf("Error: symbol name has already beeen declared\n");
 				exit(0);
 			}
@@ -302,15 +281,7 @@ int varDeclaration(char tokens[], int numVars, int lexLevel, int param){
 			// get identifier name
 			strcpy(identName, getIdentifier(identName, tokens));
 
-			// Add to symbol table
-			symbol_table[symbol_table_id].kind = 2;
-			strcpy(symbol_table[symbol_table_id].name, identName);
-			symbol_table[symbol_table_id].val = 0;
-			symbol_table[symbol_table_id].level = lexLevel;
-			symbol_table[symbol_table_id].addr = numVars + 3;
-			symbol_table[symbol_table_id].mark = 0;
-			symbol_table[symbol_table_id].param = 0;
-			symbol_table_id++;
+			addToSymbolTable(2, identName, 0, lexLevel, numVars+3, 0, 0);
 
 			getNextToken(tokens);
 		// commasym		
@@ -352,16 +323,7 @@ int procDeclaration(char tokens[], int lexLevel){
 			// get identifier name
 			strcpy(identName, getIdentifier(identName, tokens));
 
-			
-			// Add to symbol table
-			symbol_table[symbol_table_id].kind = 3;
-			strcpy(symbol_table[symbol_table_id].name, identName);
-			symbol_table[symbol_table_id].val = procedureCount;
-			symbol_table[symbol_table_id].level = lexLevel;
-			symbol_table[symbol_table_id].addr = 0;
-			symbol_table[symbol_table_id].mark = 0;
-			symbol_table[symbol_table_id].param = 0;
-			symbol_table_id++;
+			addToSymbolTable(3, identName, procedureCount, lexLevel, 0, 0, 0);
 
 			procedureCount++;
 
@@ -379,16 +341,8 @@ int procDeclaration(char tokens[], int lexLevel){
 				// get identifier name
 				strcpy(identName2, getIdentifier(identName2, tokens));
 
-				// Add to symbol table
-				symbol_table[symbol_table_id].kind = 2;
-				strcpy(symbol_table[symbol_table_id].name, identName2);
-				symbol_table[symbol_table_id].val = 0;
-				symbol_table[symbol_table_id].level = lexLevel + 1;
-				symbol_table[symbol_table_id].addr = 3;
-				symbol_table[symbol_table_id].mark = 0;
-				symbol_table[symbol_table_id].param = 0;
+				addToSymbolTable(2, identName2, 0, lexLevel+1, 3, 0, 0);
 				symbol_table[procId].param = 1;
-				symbol_table_id++;
 
 				getNextToken(tokens);
 
@@ -422,7 +376,7 @@ int procDeclaration(char tokens[], int lexLevel){
 				block(tokens, lexLevel+1, 0, procId);
 			}
 			
-			if(strcmp(code[lineNum-1].op, "OPR") && code[lineNum-1].m != 0){
+			if(strcmp(code[lineNum-1].op, "OPR") != 0 && code[lineNum-1].m != 0){
 				emit(lineNum, "LIT", 0, 0);
 				lineNum++;
 				emit(lineNum, "OPR", 0, 0);
@@ -847,7 +801,7 @@ void statement(char tokens[], int lexLevel){
 			emit(lineNum, "JMP", lexLevel, 0);
 			lineNum++;
 			code[jpcId].m = lineNum;
-			statement(  tokens, lexLevel);
+			statement(tokens, lexLevel);
 			code[jpcId].m = lineNum;
 		}
 		else{
@@ -962,15 +916,7 @@ void program(char tokens[]){
 		}
 	}
 
-	// add to symbol table
-	symbol_table[symbol_table_id].kind = 3;
-	strcpy(symbol_table[symbol_table_id].name, "main");
-	symbol_table[symbol_table_id].val = 0;
-	symbol_table[symbol_table_id].level = 0;
-	symbol_table[symbol_table_id].addr = 0;
-	symbol_table[symbol_table_id].mark = 0;
-	symbol_table[symbol_table_id].param = 0;
-	symbol_table_id++;
+	addToSymbolTable(3, "main", 0, 0, 0, 0, 0);
 
 	procedureCount++;
 
