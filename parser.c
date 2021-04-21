@@ -407,7 +407,7 @@ void factor(char tokens[], int lexLevel){
 			printf("Error: competing symbol declarations at the same level\n");
 			exit(0);
 		}
-		else if(symIdC == -1 || symIdV != -1 && symbol_table[symIdV].level > symbol_table[symIdC].level){
+		else if(symIdC == -1 || (symIdV != -1 && symbol_table[symIdV].level > symbol_table[symIdC].level)){
 			emit(lineNum, "LOD", lexLevel - symbol_table[symIdV].level, symbol_table[symIdV].addr);
 			lineNum++;
 		}
@@ -512,7 +512,9 @@ void expression(  char tokens[], int lexLevel){
 		while(token == 4 || token == 5){
 			if(token == 4){
 				// skips over identifier
-				while(token > 47){getNextToken(tokens);}
+				char identifier[12] = {};
+				strcpy(identifier, getIdentifier(identifier, tokens));
+				getNextToken(tokens);
 
 				term(tokens, lexLevel);
 
@@ -521,8 +523,10 @@ void expression(  char tokens[], int lexLevel){
 				lineNum++;
 			}
 			else{
-				//skips over identifier
-				while(token > 47){getNextToken(tokens);}
+				// skips over identifier
+				char identifier[12] = {};
+				strcpy(identifier, getIdentifier(identifier, tokens));
+				getNextToken(tokens);
 
 				term(tokens, lexLevel);
 
@@ -536,7 +540,8 @@ void expression(  char tokens[], int lexLevel){
 		//plussym
 		if(token == 4){
 			// skips over identifier
-			do{tokensId++;}while(tokens[tokensId] > 47);
+			char identifier[12] = {};
+			strcpy(identifier, getIdentifier(identifier, tokens));
 			getNextToken(tokens);
 			
 		}
@@ -663,9 +668,9 @@ void statement(char tokens[], int lexLevel){
 			exit(0);
 		}
 
-		// Don't need to save the identifier so we skip over it
-		while(tokens[tokensId] > 47){ tokensId++; }
-
+		// skips over identifier
+		char identifier[12] = {};
+		strcpy(identifier, getIdentifier(identifier, tokens));
 		getNextToken(tokens);
 
 		// becomessym
@@ -740,7 +745,7 @@ void statement(char tokens[], int lexLevel){
 		// lparentsym
 		if(token == 15){
 			getNextToken(tokens);
-			expression(  tokens, lexLevel);
+			expression(tokens, lexLevel);
 			emit(lineNum, "OPR", 0, 0);
 			lineNum++;
 			// rparentsym
@@ -782,7 +787,7 @@ void statement(char tokens[], int lexLevel){
 		condition(tokens, lexLevel);
 
 		int jpcId = lineNum;
-		emit(lineNum, "JPC", lexLevel, jpcId);
+		emit(lineNum, "JPC", 0, jpcId);
 		lineNum++;
 
 		//thensym
@@ -797,12 +802,12 @@ void statement(char tokens[], int lexLevel){
 		// elsesym
 		if(token == 33){
 			getNextToken(tokens);
-			jpcId = lineNum;
-			emit(lineNum, "JMP", lexLevel, 0);
+			int jmpId = lineNum;
+			emit(lineNum, "JMP", lexLevel, jmpId);
 			lineNum++;
 			code[jpcId].m = lineNum;
 			statement(tokens, lexLevel);
-			code[jpcId].m = lineNum;
+			code[jmpId].m = lineNum;
 		}
 		else{
 			code[jpcId].m = lineNum;
@@ -825,7 +830,7 @@ void statement(char tokens[], int lexLevel){
 		getNextToken(tokens);
 		
 		int jpcId = lineNum;
-		emit(lineNum, "JPC", lexLevel, jpcId);
+		emit(lineNum, "JPC", 0, jpcId);
 		lineNum++;
 		
 		statement(tokens, lexLevel);
@@ -862,7 +867,7 @@ void statement(char tokens[], int lexLevel){
 
 		getNextToken(tokens);
 
-		emit(lineNum, "SYS", lexLevel, 2);
+		emit(lineNum, "SYS", 0, 2);
 		lineNum++;
 		emit(lineNum, "STO", lexLevel - symbol_table[symId].level, symbol_table[symId].addr);
 		lineNum++;	
@@ -873,7 +878,7 @@ void statement(char tokens[], int lexLevel){
 
 		expression(tokens, lexLevel);
 
-		emit(lineNum, "SYS", lexLevel, 1);
+		emit(lineNum, "SYS", 0, 1);
 		lineNum++;
 	}
 }
