@@ -30,9 +30,9 @@ symbol symbol_table[MAX_SYMBOL_TABLE_SIZE] = {}; // initialize symbol table
 instructions code[MAX_SYMBOL_TABLE_SIZE] = {};
 
 // function header declaration
-void expression(  char tokens[], int lexLevel);
-void block(  char tokens[], int lexLevel, int param, int procedureId);
-void statement(  char tokens[], int lexLevel);
+void expression(char tokens[], int lexLevel);
+void block(char tokens[], int lexLevel, int param, int procedureId);
+void statement(char tokens[], int lexLevel);
 
 void outputAssembly(){
 	int i = 0;
