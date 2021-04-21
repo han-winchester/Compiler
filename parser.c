@@ -402,7 +402,7 @@ int procDeclaration(char tokens[], int lexLevel){
 
 				//semicolonsym
 				if(token != 18){
-					printf("Error: symbol declarations must be followed by a semicolon 1\n"); 
+					printf("Error: symbol declarations must be followed by a semicolon\n"); 
 					exit(0);
 				}
 
@@ -413,7 +413,7 @@ int procDeclaration(char tokens[], int lexLevel){
 			else{
 				//semicolonsym
 				if(token != 18){
-					printf("Error: symbol declarations must be followed by a semicolon 2\n"); 
+					printf("Error: symbol declarations must be followed by a semicolon\n"); 
 					exit(0);
 				}
 
@@ -431,7 +431,7 @@ int procDeclaration(char tokens[], int lexLevel){
 
 			// semicolonsym
 			if(token != 18){
-				printf("Error: symbol declarations must be followed by a semicolon %d\n", tokens[tokensId]); 
+				printf("Error: symbol declarations must be followed by a semicolon\n"); 
 				exit(0);
 			}
 			getNextToken(tokens);
@@ -724,7 +724,7 @@ void statement(char tokens[], int lexLevel){
 
 		expression(tokens, lexLevel);
 
-		emit(lineNum, "STO", lexLevel - symbol_table[symId].level, symbol_table[symId].addr);
+		emit(lineNum, "STO", lexLevel - symbol_table[symId].level, symbol_table[symId].addr); 				// THIS LINE
 
 		while(token > 47){getNextToken(tokens);}
 
@@ -978,7 +978,7 @@ void program(char tokens[]){
 
 	//periodsym
 	if(token != 19){
-		printf("Error: program must end with period %d\n", tokens[tokensId]);
+		printf("Error: program must end with period\n");
 		exit(0);
 	}
 	int j;
