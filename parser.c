@@ -91,6 +91,17 @@ void getNextToken(char tokens[]){
 	tokensId++;
 }
 
+// iterate through identifier array to decrement o to not skip over tokens in tokens[tokensId] when saving the identifier name or number
+void decrementTokenList(char tokens[], char identifier[]){
+	
+	int identifierId = 0;
+	while(identifier[identifierId] != '\0'){
+		identifierId++;
+		tokensId--;
+	}
+	return;
+}
+
 // parameters: empty array for identifier name or number, list of tokens
 // returns: the char pointer to identifier name or number
 char* getIdentifier(char identName[], char tokens[]){
@@ -126,11 +137,7 @@ int symbolTableCheck(char tokens[], int lexLevel){
 	// Get identifier name
 	strcpy(identifier, getIdentifier(identifier, tokens));
 
-	// iterate through identifier array to decrement o to not skip over tokens in tokens[tokensId] when returning from this function
-	while(identifier[identifierId] != '\0'){
-		identifierId++;
-		tokensId--;
-	}
+	decrementTokenList(tokens, identifier);
 
 	// iterate through table array and check if name matches any entries
 	for(i=0;i<=symbol_table_id;i++){
@@ -150,13 +157,10 @@ int symbolTableSearch(  char tokens[], int lexLevel, int kind){
 	// Get identifier name
 	strcpy(identifier, getIdentifier(identifier, tokens));
 
-	// iterate through identifier array to decrement o to not skip over tokens in tokens[tokensId] when returning from this function
-	while(identifier[identifierId] != '\0'){
-		identifierId++;
-		tokensId--;
-	}
-	// iterate through table array and check if name matches any entries
-	for(i=0;i<=symbol_table_id;i++){
+	decrementTokenList(tokens, identifier);
+
+	// iterate through table array backwards and check if name matches any entries
+	for(i=symbol_table_id;i>=0;i--){
 		if(!(strcmp(identifier, symbol_table[i].name)) && (symbol_table[i].level <= lexLevel) && (symbol_table[i].mark == 0) && (symbol_table[i].kind == kind)){ // strcmp returns 0 if the strings match
 			return i;
 		}
@@ -682,8 +686,8 @@ void statement(char tokens[], int lexLevel){
 		getNextToken(tokens);
 
 		expression(tokens, lexLevel);
-
-		emit(lineNum, "STO", lexLevel - symbol_table[symId].level, symbol_table[symId].addr); 				// THIS LINE
+		
+		emit(lineNum, "STO", lexLevel - symbol_table[symId].level, symbol_table[symId].addr);
 
 		while(token > 47){getNextToken(tokens);}
 
