@@ -29,10 +29,10 @@ int base(int stack[], int level, int BP){
 void vm(struct instructions codeText[], int vflag){
 	// initial values for PM/0 CPU registers
 	int SP = -1, BP = 0, PC = 0;
-	int i = 0, lineNum = 0, halt = 0, oldBP = 0; // lineNum is used to store the PC before incrementing it by 1 in the fetch cycle. Halt == 0 to make sure the program continues
+	int i = 0, lineNum = 0, halt = 0; // lineNum is used to store the PC before incrementing it by 1 in the fetch cycle. Halt == 0 to make sure the program continues
 	instruction IR;	// instruction register
 	int stack[MAX_STACK_HEIGHT] = {};// stack can only get as high as this value
-
+	int markers[MAX_STACK_HEIGHT] = {}; // array to save position of activation record bars
 	/*Output header*/
 	if(vflag == 1){ 
 		printf("		PC	BP	SP	stack\n");
@@ -60,15 +60,14 @@ void vm(struct instructions codeText[], int vflag){
 
 				if(vflag == 1){ printf("LIT%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" "); }
 				
-				for(i=0;i<=SP;i++){ //for loop to print the contents of the stack
-					if(i == BP && BP != 0){
-						if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records 
+				// output activation record bars and stack
+				for (i = 0; i <= SP; i++){
+					if (markers[i]){
+						if(vflag == 1){ printf(" | %d", stack[i]); }
 					}
-					if(i ==  oldBP && oldBP !=0 && oldBP != BP){ // essentially after the first if statement above then check for the old BP 
-						if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records 
-					}
-					if(vflag == 1){ printf("%d ", stack[i]); } 
-					
+					else{
+						if(vflag == 1){ printf(" %d", stack[i]); }
+					}	
 				}
 				if(vflag == 1){ printf("\n"); } 
 				break;
@@ -79,18 +78,18 @@ void vm(struct instructions codeText[], int vflag){
 						if(vflag == 1){ printf("%d ", lineNum); }
 						stack[BP - 1] = stack[SP];
 						SP = BP - 1; // change stack pointer
+						markers[SP + 1] = 0; // unmarks activation record bar to not output
 						BP = stack[SP + 2]; //BP gets whatever value is at this position in the stack
 						PC = stack[SP + 3];
 						if(vflag == 1){ printf("OPR%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" "); }
 						
-						for(i=0;i<=SP;i++){
-							if(i == BP && BP != 0){ // check where the base pointer is to print the bar |
-								if(vflag == 1){ printf(" | "); }
+						for (i = 0; i <= SP; i++){
+							if (markers[i]){
+								if(vflag == 1){ printf(" | %d", stack[i]); }
 							}
-							if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-								if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-							}
-							if(vflag == 1){ printf("%d ", stack[i]); }
+							else{
+								if(vflag == 1){ printf(" %d", stack[i]); }
+							}	
 						}
 						if(vflag == 1){ printf("\n"); }
 						break;
@@ -100,14 +99,13 @@ void vm(struct instructions codeText[], int vflag){
 						stack[SP] = -1 * stack[SP]; //make whatever value is at this position of the stack negative
 						if(vflag == 1){ printf("OPR%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" ");}
 						
-						for(i=0;i<=SP;i++){
-							if(i == BP && BP != 0){
-								if(vflag == 1){ printf(" | "); }
+						for (i = 0; i <= SP; i++){
+							if (markers[i]){
+								if(vflag == 1){ printf(" | %d", stack[i]); }
 							}
-							if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-								if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-							}
-							if(vflag == 1){ printf("%d ", stack[i]); }
+							else{
+								if(vflag == 1){ printf(" %d", stack[i]); }
+							}	
 						}
 						if(vflag == 1){ printf("\n"); }
 						break;
@@ -119,15 +117,13 @@ void vm(struct instructions codeText[], int vflag){
 
 						if(vflag == 1){ printf("OPR%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" "); }
 						
-						for(i=0;i<=SP;i++){
-							if(i == BP && BP != 0){
-								if(vflag == 1){ printf(" | "); }
+						for (i = 0; i <= SP; i++){
+							if (markers[i]){
+								if(vflag == 1){ printf(" | %d", stack[i]); }
 							}
-							if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-								if(vflag == 1){ printf(" | "); }
-							}
-							if(vflag == 1){  printf("%d ", stack[i]);  }
-							
+							else{
+								if(vflag == 1){ printf(" %d", stack[i]); }
+							}	
 						}
 						if(vflag == 1){ printf("\n"); }
 								
@@ -139,14 +135,13 @@ void vm(struct instructions codeText[], int vflag){
 						stack[SP] = stack[SP] - stack[SP + 1]; // subtract two elements of the stack together
 						if(vflag == 1){ printf("OPR%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" "); }
 						
-						for(i=0;i<=SP;i++){
-							if(i == BP && BP != 0){
-								if(vflag == 1){ printf(" | "); }
+						for (i = 0; i <= SP; i++){
+							if (markers[i]){
+								if(vflag == 1){ printf(" | %d", stack[i]); }
 							}
-							if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-								if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-							}
-							if(vflag == 1){ printf("%d ", stack[i]); }
+							else{
+								if(vflag == 1){ printf(" %d", stack[i]); }
+							}	
 						}
 						if(vflag == 1){ printf("\n"); }
 						break;
@@ -157,14 +152,13 @@ void vm(struct instructions codeText[], int vflag){
 						stack[SP] = stack[SP] * stack[SP + 1]; // multiply two elements of the stack together
 						if(vflag == 1){ printf("OPR%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" ");}
 						
-						for(i=0;i<=SP;i++){
-							if(i == BP && BP != 0){
-								if(vflag == 1){ printf(" | "); }
+						for (i = 0; i <= SP; i++){
+							if (markers[i]){
+								if(vflag == 1){ printf(" | %d", stack[i]); }
 							}
-							if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-								if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-							}
-							if(vflag == 1){ printf("%d ", stack[i]); }
+							else{
+								if(vflag == 1){ printf(" %d", stack[i]); }
+							}	
 						}
 						if(vflag == 1){ printf("\n"); }
 						break;
@@ -175,14 +169,13 @@ void vm(struct instructions codeText[], int vflag){
 						stack[SP] = stack[SP] / stack[SP + 1]; // divide two elements of the stack together
 						if(vflag == 1){ printf("OPR%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" "); }
 						
-						for(i=0;i<=SP;i++){
-							if(i == BP && BP != 0){
-								if(vflag == 1){ printf(" | "); }
+						for (i = 0; i <= SP; i++){
+							if (markers[i]){
+								if(vflag == 1){ printf(" | %d", stack[i]); }
 							}
-							if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-								if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-							}
-							if(vflag == 1){ printf("%d ", stack[i]); }
+							else{
+								if(vflag == 1){ printf(" %d", stack[i]); }
+							}	
 						}
 						if(vflag == 1){ printf("\n"); }
 						break;
@@ -192,14 +185,13 @@ void vm(struct instructions codeText[], int vflag){
 						stack[SP] = stack[SP] % 2; // returns the remainder, returns zero if even
 						if(vflag == 1){ printf("OPR%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" "); }
 						
-						for(i=0;i<=SP;i++){
-							if(i == BP && BP != 0){
-								if(vflag == 1){ printf(" | "); }
+						for (i = 0; i <= SP; i++){
+							if (markers[i]){
+								if(vflag == 1){ printf(" | %d", stack[i]); }
 							}
-							if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-								if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-							}
-							if(vflag == 1){ printf("%d ", stack[i]); }
+							else{
+								if(vflag == 1){ printf(" %d", stack[i]); }
+							}	
 						}
 						if(vflag == 1){ printf("\n"); }
 						break;
@@ -210,14 +202,13 @@ void vm(struct instructions codeText[], int vflag){
 						stack[SP] = stack[SP] % stack[SP + 1]; // gets the remainder of two elements in the stack
 						if(vflag == 1){ printf("OPR%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" ");}	
 											
-						for(i=0;i<=SP;i++){
-							if(i == BP && BP != 0){
-								if(vflag == 1){ printf(" | "); }
+						for (i = 0; i <= SP; i++){
+							if (markers[i]){
+								if(vflag == 1){ printf(" | %d", stack[i]); }
 							}
-							if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-								if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-							}
-							if(vflag == 1){ printf("%d ", stack[i]); }
+							else{
+								if(vflag == 1){ printf(" %d", stack[i]); }
+							}	
 						}
 						if(vflag == 1){ printf("\n"); }
 						break;
@@ -228,14 +219,13 @@ void vm(struct instructions codeText[], int vflag){
 						stack[SP] = stack[SP] == stack[SP + 1]; // checks if two elements in the stack are equal
 						if(vflag == 1){ printf("OPR%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" ");}
 						
-						for(i=0;i<=SP;i++){
-							if(i == BP && BP != 0){
-								if(vflag == 1){ printf(" | "); }
+						for (i = 0; i <= SP; i++){
+							if (markers[i]){
+								if(vflag == 1){ printf(" | %d", stack[i]); }
 							}
-							if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-								if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-							}
-							if(vflag == 1){ printf("%d ", stack[i]); }
+							else{
+								if(vflag == 1){ printf(" %d", stack[i]); }
+							}	
 						}
 						if(vflag == 1){ printf("\n"); }
 						break;
@@ -246,14 +236,13 @@ void vm(struct instructions codeText[], int vflag){
 						stack[SP] =  stack[SP] != stack[SP + 1]; // checks if two elements in the stack are not equal
 						if(vflag == 1){ printf("OPR%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" ");}
 						
-						for(i=0;i<=SP;i++){
-							if(i == BP && BP != 0){
-								if(vflag == 1){ printf(" | "); }
+						for (i = 0; i <= SP; i++){
+							if (markers[i]){
+								if(vflag == 1){ printf(" | %d", stack[i]); }
 							}
-							if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-								if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-							}
-							if(vflag == 1){ printf("%d ", stack[i]); }
+							else{
+								if(vflag == 1){ printf(" %d", stack[i]); }
+							}	
 						}
 						if(vflag == 1){ printf("\n"); }
 						break;
@@ -264,14 +253,13 @@ void vm(struct instructions codeText[], int vflag){
 						stack[SP] = stack[SP] < stack[SP + 1]; // checks if one element in the stack is less than another
 						if(vflag == 1){ printf("OPR%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" "); }
 						
-						for(i=0;i<=SP;i++){
-							if(i == BP && BP != 0){
-								if(vflag == 1){ printf(" | "); }
+						for (i = 0; i <= SP; i++){
+							if (markers[i]){
+								if(vflag == 1){ printf(" | %d", stack[i]); }
 							}
-							if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-								if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-							}
-							if(vflag == 1){ printf("%d ", stack[i]); }
+							else{
+								if(vflag == 1){ printf(" %d", stack[i]); }
+							}	
 						}
 						if(vflag == 1){ printf("\n"); }
 						break;
@@ -282,14 +270,13 @@ void vm(struct instructions codeText[], int vflag){
 						stack[SP] = stack[SP] <= stack[SP + 1]; // checks if one element in the stack is less than or equal to another
 						if(vflag == 1){ printf("OPR%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" ");}
 						
-						for(i=0;i<=SP;i++){
-							if(i == BP && BP != 0){
-								if(vflag == 1){ printf(" | "); }
+						for (i = 0; i <= SP; i++){
+							if (markers[i]){
+								if(vflag == 1){ printf(" | %d", stack[i]); }
 							}
-							if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-								if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-							}
-							if(vflag == 1){ printf("%d ", stack[i]); }
+							else{
+								if(vflag == 1){ printf(" %d", stack[i]); }
+							}	
 						}
 						if(vflag == 1){ printf("\n"); }
 						break;
@@ -300,14 +287,13 @@ void vm(struct instructions codeText[], int vflag){
 						stack[SP] = stack[SP] > stack[SP + 1]; // checks if an element in the stack is greater than another
 						if(vflag == 1){ printf("OPR%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" ");}
 						
-						for(i=0;i<=SP;i++){
-							if(i == BP && BP != 0){
-								if(vflag == 1){ printf(" | "); }
+						for (i = 0; i <= SP; i++){
+							if (markers[i]){
+								if(vflag == 1){ printf(" | %d", stack[i]); }
 							}
-							if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-								if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-							}
-							if(vflag == 1){ printf("%d ", stack[i]); }
+							else{
+								if(vflag == 1){ printf(" %d", stack[i]); }
+							}	
 						}
 						if(vflag == 1){ printf("\n"); }
 						break;
@@ -318,14 +304,13 @@ void vm(struct instructions codeText[], int vflag){
 						stack[SP] = stack[SP] >= stack[SP + 1]; // checks if an element in the stack is greater than or equal to another
 						if(vflag == 1){ printf("OPR%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" ");}
 						
-						for(i=0;i<=SP;i++){
-							if(i == BP && BP != 0){
-								if(vflag == 1){ printf(" | "); }
+						for (i = 0; i <= SP; i++){
+							if (markers[i]){
+								if(vflag == 1){ printf(" | %d", stack[i]); }
 							}
-							if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-								if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-							}
-							if(vflag == 1){ printf("%d ", stack[i]); }
+							else{
+								if(vflag == 1){ printf(" %d", stack[i]); }
+							}	
 						}
 						if(vflag == 1){ printf("\n"); }
 						break;
@@ -343,14 +328,13 @@ void vm(struct instructions codeText[], int vflag){
 				stack[SP] = stack[base(stack, IR.L, BP) + IR.M];
 				if(vflag == 1){ printf("LOD%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" "); }
 				
-				for(i=0;i<=SP;i++){
-					if(i == BP && BP != 0){
-						if(vflag == 1){ printf(" | "); }
+				for (i = 0; i <= SP; i++){
+					if (markers[i]){
+						if(vflag == 1){ printf(" | %d", stack[i]); }
 					}
-					if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-						if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-					}
-					if(vflag == 1){ printf("%d ", stack[i]); }
+					else{
+						if(vflag == 1){ printf(" %d", stack[i]); }
+					}	
 				}
 				if(vflag == 1){ printf("\n"); }
 				break;
@@ -361,37 +345,35 @@ void vm(struct instructions codeText[], int vflag){
 				SP = SP - 1;
 				if(vflag == 1){ printf("STO%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" "); }
 				
-				for(i=0;i<=SP;i++){
-					if(i == BP && BP != 0){
-						if(vflag == 1){ printf(" | "); }
+				for (i = 0; i <= SP; i++){
+					if (markers[i]){
+						if(vflag == 1){ printf(" | %d", stack[i]); }
 					}
-					if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-						if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-					}
-					if(vflag == 1){ printf("%d ", stack[i]); }
+					else{
+						if(vflag == 1){ printf(" %d", stack[i]); }
+					}	
 				}
 				if(vflag == 1){ printf("\n"); }
 				break;
 				
 			case 5: // CAL call procedure at M, Generates new AR
 				if(vflag == 1){ printf("%d ", lineNum); }
+				markers[SP + 1] = 1; 				// marks activation record bars to output
 				stack[SP + 1] = base(stack, IR.L, BP); // Static link SL
 				stack[SP + 2] = BP;					// Dynamic Link DL
 				stack[SP + 3] = PC;					// Return Address RA
-				stack[SP + 4] = stack[SP];			// Parameter P																					// THIS LINE
-				oldBP = BP;	// get oldBP to remember where the base pointers are for the Activation Records to print | to separate the AR's
+				stack[SP + 4] = stack[SP];			// Parameter P
 				BP = SP + 1;
 				PC = IR.M;
 				if(vflag == 1){ printf("CAL%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" "); }
 				
-				for(i=0;i<=SP;i++){
-					if(i == BP && BP != 0){
-						if(vflag == 1){ printf(" | "); }
+				for (i = 0; i <= SP; i++){
+					if (markers[i]){
+						if(vflag == 1){ printf(" | %d", stack[i]); }
 					}
-					if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-						if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-					}
-					if(vflag == 1){ printf("%d ", stack[i]); }
+					else{
+						if(vflag == 1){ printf(" %d", stack[i]); }
+					}	
 				}
 				if(vflag == 1){ printf("\n"); }
 				break;
@@ -401,14 +383,13 @@ void vm(struct instructions codeText[], int vflag){
 				SP = SP + IR.M;
 				if(vflag == 1){ printf("INC%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" "); }
 				
-				for(i=0;i<=SP;i++){
-					if(i == BP && BP != 0){
-						if(vflag == 1){ printf(" | "); }
+				for (i = 0; i <= SP; i++){
+					if (markers[i]){
+						if(vflag == 1){ printf(" | %d", stack[i]); }
 					}
-					if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-						if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-					}
-					if(vflag == 1){ printf("%d ", stack[i]); }
+					else{
+						if(vflag == 1){ printf(" %d", stack[i]); }
+					}	
 				}
 				if(vflag == 1){ printf("\n"); }
 				break;
@@ -418,14 +399,13 @@ void vm(struct instructions codeText[], int vflag){
 				PC = IR.M; // jump to another instruction at M
 				if(vflag == 1){ printf("JMP%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" "); }
 				
-				for(i=0;i<=SP;i++){
-					if(i == BP && BP != 0){
-						if(vflag == 1){ printf(" | "); }
+				for (i = 0; i <= SP; i++){
+					if (markers[i]){
+						if(vflag == 1){ printf(" | %d", stack[i]); }
 					}
-					if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-						if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-					}
-					if(vflag == 1){ printf("%d ", stack[i]); }
+					else{
+						if(vflag == 1){ printf(" %d", stack[i]); }
+					}	
 				}
 				if(vflag == 1){ printf("\n"); }
 				break;
@@ -438,14 +418,13 @@ void vm(struct instructions codeText[], int vflag){
 				SP = SP - 1;
 				if(vflag == 1){ printf("JPC%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" "); }
 				
-				for(i=0;i<=SP;i++){
-					if(i == BP && BP != 0){
-						if(vflag == 1){ printf(" | "); }
+				for (i = 0; i <= SP; i++){
+					if (markers[i]){
+						if(vflag == 1){ printf(" | %d", stack[i]); }
 					}
-					if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-						if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-					}
-					if(vflag == 1){ printf("%d ", stack[i]); }
+					else{
+						if(vflag == 1){ printf(" %d", stack[i]); }
+					}	
 				}
 				if(vflag == 1){ printf("\n"); }
 				break;
@@ -458,14 +437,13 @@ void vm(struct instructions codeText[], int vflag){
 						if(vflag == 1){ printf("%d ", lineNum); }
 						if(vflag == 1){ printf("SYS%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP); printf(" "); }
 						
-						for(i=0;i<=SP;i++){
-							if(i == BP && BP != 0){
-								if(vflag == 1){ printf(" | "); }
+						for (i = 0; i <= SP; i++){
+							if (markers[i]){
+								if(vflag == 1){ printf(" | %d", stack[i]); }
 							}
-							if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-								if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-							}
-							if(vflag == 1){ printf("%d ", stack[i]); }
+							else{
+								if(vflag == 1){ printf(" %d", stack[i]); }
+							}	
 						}
 						if(vflag == 1){ printf("\n"); }
 						break;
@@ -481,14 +459,13 @@ void vm(struct instructions codeText[], int vflag){
 							printf("SYS%3d%3d	%d	%d	%d	", IR.L, IR.M, PC, BP, SP);
 							printf(" ");
 						}
-						for(i=0;i<=SP;i++){
-							if(i == BP && BP != 0){
-								if(vflag == 1){ printf(" | "); }
+						for (i = 0; i <= SP; i++){
+							if (markers[i]){
+								if(vflag == 1){ printf(" | %d", stack[i]); }
 							}
-							if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-								if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-							}
-							if(vflag == 1){ printf("%d ", stack[i]); }
+							else{
+								if(vflag == 1){ printf(" %d", stack[i]); }
+							}	
 						}
 						if(vflag == 1){ printf("\n"); }
 						break;
@@ -501,15 +478,13 @@ void vm(struct instructions codeText[], int vflag){
 							printf(" ");
 						}
 
-						for(i=0;i<=SP;i++){
-							if(i == BP && BP != 0){
-								if(vflag == 1){ printf(" | "); }
+						for (i = 0; i <= SP; i++){
+							if (markers[i]){
+								if(vflag == 1){ printf(" | %d", stack[i]); }
 							}
-							if(i ==  oldBP && oldBP !=0 && oldBP != BP){
-								if(vflag == 1){ printf(" | "); } // prints bar if to separate the activation records
-							}
-							if(vflag == 1){ printf("%d ", stack[i]); }
-							
+							else{
+								if(vflag == 1){ printf(" %d", stack[i]); }
+							}	
 						}
 						if(vflag == 1){ printf("\n"); }
 						
