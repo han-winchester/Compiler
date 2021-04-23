@@ -941,13 +941,6 @@ void program(char tokens[]){
 		code[j].m = symbol_table[findProcedure(j)].addr;
 	}
 
-	/*int k;
-	for(k=0;k<=lineNum;k++){
-		if(!strcmp(code[k].op, "CAL")){
-			code[k].m = symbol_table[findProcedure(k)].addr;
-		}
-	}*/
-
 	emit(lineNum, "SYS", 0, 3);
 	lineNum++;
 }
