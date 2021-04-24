@@ -705,7 +705,7 @@ void statement(char tokens[], int lexLevel){
 		}
 		symId = symbolTableSearch(tokens, lexLevel, 3);
 		if(symId == -1){
-			printf("Error: procedure call\n");
+			printf("Error: undeclared procedure for call\n");
 			exit(0);
 		}
 
@@ -857,7 +857,7 @@ void statement(char tokens[], int lexLevel){
 		}
 		symId = symbolTableSearch(tokens, lexLevel, 2);
 		if(symId == -1){
-			printf("Error: symbol name has already been declared\n");
+			printf("Error: undeclared variable or constant in equation\n");
 			exit(0);
 		}
 		// not a var
